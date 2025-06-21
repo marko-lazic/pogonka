@@ -119,34 +119,146 @@ export class MockOrderRepository implements OrderRepository {
       'Dijamant',
       'Nectar',
       'Carnex',
-      'Matijević'
+      'Matijević',
+      'Agrokor',
+      'Dunav Osiguranje',
+      'Galenika',
+      'Jugopetrol',
+      'Lasta',
+      'Maxi',
+      'Merkator',
+      'Planinka',
+      'Podravka',
+      'Prva Petoletka',
+      'Sintelon',
+      'Sojaprotein',
+      'Sunoko',
+      'Takovo',
+      'Tigar',
+      'Univerexport',
+      'Victoria Group',
+      'Voda Vrnjci',
+      'Yuhor',
+      'Zdravlje Leskovac'
     ];
 
     // Serbian domains
     const domains = ['rs', 'co.rs', 'org.rs', 'edu.rs', 'in.rs'];
 
+    // Map to store company information for consistency
+    const companyInfoMap = new Map<string, { taxNumber: string, email: string }>();
+
+    // Function to get a random date within the last 3 months with distribution curve
+    // More recent dates are more likely
+    const getRandomDate = (): Date => {
+      const now = new Date();
+      const threeMonthsAgo = new Date(now);
+      threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+      // Generate a random value between 0 and 1 with bias towards 1 (more recent dates)
+      // Using power distribution to create the curve
+      const randomFactor = Math.pow(Math.random(), 2); // Square makes it more likely to be closer to 1
+
+      // Calculate the time difference and apply the random factor
+      const timeDiff = now.getTime() - threeMonthsAgo.getTime();
+      const randomTime = threeMonthsAgo.getTime() + (timeDiff * randomFactor);
+
+      return new Date(randomTime);
+    };
+
+    // Function to get order status based on date (reverse curve)
+    // Newer orders are more likely to be in earlier states
+    const getStatusBasedOnDate = (date: Date): OrderStatus => {
+      const now = new Date();
+      const threeMonthsAgo = new Date(now);
+      threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+      // Calculate how old the order is as a percentage (0 = now, 1 = three months ago)
+      const totalTimeSpan = now.getTime() - threeMonthsAgo.getTime();
+      const orderAge = (now.getTime() - date.getTime()) / totalTimeSpan;
+
+      // Apply reverse curve - older orders more likely to be in later states
+      // Using power distribution for the curve
+      const progressionFactor = Math.pow(orderAge, 1.5); // Higher exponent makes curve steeper
+
+      // Get all statuses except CANCELED (we'll handle that separately)
+      const statuses = [
+        OrderStatus.CREATED,
+        OrderStatus.CONFIRMED,
+        OrderStatus.PAYMENT_OF_AVANS,
+        OrderStatus.PRODUCTION_AND_PACKAGING,
+        OrderStatus.DELIVERY,
+        OrderStatus.PROJECT_BILLING
+      ];
+
+      // Calculate index based on progression factor
+      const index = Math.min(
+        Math.floor(progressionFactor * statuses.length),
+        statuses.length - 1
+      );
+
+      // 10% chance of CANCELED status, regardless of date
+      if (Math.random() < 0.1) {
+        return OrderStatus.CANCELED;
+      }
+
+      return statuses[index];
+    };
+
     // Generate random orders with Serbian domain information
-    for (let i = 0; i < 20; i++) {
+    // Increased number of orders to 100
+    for (let i = 0; i < 100; i++) {
       // Generate random company name
       const companyName = companyNames[Math.floor(Math.random() * companyNames.length)];
 
-      // Generate random tax number (PIB in Serbia is 9 digits)
-      const taxNumber = Math.floor(100000000 + Math.random() * 900000000).toString();
+      // Get or create consistent company info
+      let taxNumber: string;
+      let email: string;
 
-      // Generate random email
-      const companySlug = companyName.toLowerCase().replace(/\s+/g, '');
-      const domain = domains[Math.floor(Math.random() * domains.length)];
-      const email = `info@${companySlug}.${domain}`;
+      if (companyInfoMap.has(companyName)) {
+        // Use existing info for consistency
+        const info = companyInfoMap.get(companyName)!;
+        taxNumber = info.taxNumber;
+        email = info.email;
+      } else {
+        // Generate new info for this company
+        taxNumber = Math.floor(100000000 + Math.random() * 900000000).toString();
+        const companySlug = companyName.toLowerCase().replace(/\s+/g, '');
+        const domain = domains[Math.floor(Math.random() * domains.length)];
+        email = `info@${companySlug}.${domain}`;
+
+        // Store for future use
+        companyInfoMap.set(companyName, { taxNumber, email });
+      }
 
       // Create customer info
       const customer = new CustomerInfo(companyName, taxNumber, email);
 
-      // Randomly select an order status
-      const statuses = Object.values(OrderStatus);
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      // Get random date with distribution curve
+      const createdAt = getRandomDate();
 
-      // Create order
+      // Get status based on date (reverse curve)
+      const status = getStatusBasedOnDate(createdAt);
+
+      // Create order with the generated ID
       const order = new Order(this.idGenerator.id(), customer, status);
+
+      // Set the createdAt date to our generated date
+      Object.defineProperty(order, '_createdAt', { value: createdAt });
+
+      // If the status is not CREATED, set a realistic updatedAt timestamp
+      if (status !== OrderStatus.CREATED) {
+        // Calculate a random time after createdAt but before now
+        const now = new Date();
+        const timeSinceCreation = now.getTime() - createdAt.getTime();
+
+        // Random factor between 0.2 and 0.8 of the time since creation
+        const randomDelay = timeSinceCreation * (0.2 + Math.random() * 0.6);
+        const updatedAt = new Date(createdAt.getTime() + randomDelay);
+
+        // Set the updatedAt property
+        Object.defineProperty(order, '_updatedAt', { value: updatedAt });
+      }
 
       // Add order to the map
       this.orders.set(order.id, order);
