@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="{{currentLocale}}" data-theme="light">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -17,7 +17,7 @@
                     </svg>
                 </div>
                 <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                    <li><a href="/orders">Orders</a></li>
+                    <li><a href="/orders">{{__ 'orders.title'}}</a></li>
                 </ul>
             </div>
             <a href="/" class="btn btn-ghost">
@@ -27,10 +27,33 @@
         </div>
         <div class="navbar-center hidden lg:flex">
             <ul class="menu menu-horizontal px-1">
-                <li><a href="/orders">Orders</a></li>
+                <li><a href="/orders">{{__ 'orders.title'}}</a></li>
             </ul>
         </div>
         <div class="navbar-end">
+            <!-- Language Switcher -->
+            <div class="dropdown dropdown-end mr-4">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                    {{__ 'common.language'}}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <li>
+                        <a href="#" data-lang="en" class="lang-option {{#if (eq currentLocale 'en')}}active{{/if}}">
+                            {{__ 'common.english'}}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-lang="sr" class="lang-option {{#if (eq currentLocale 'sr')}}active{{/if}}">
+                            {{__ 'common.serbian'}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Theme Toggle -->
             <label class="swap swap-rotate">
                 <!-- this hidden checkbox controls the state -->
                 <input type="checkbox" class="theme-controller" value="dark" />
@@ -73,6 +96,62 @@
                 html.setAttribute('data-theme', 'dark');
             } else {
                 html.setAttribute('data-theme', 'light');
+            }
+        });
+
+        // Language switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to set language and create a cookie
+            function setLanguage(lang) {
+                // Store language preference in localStorage
+                localStorage.setItem('preferredLanguage', lang);
+
+                // Create a fetch request to set the language cookie
+                fetch('/', {
+                    method: 'HEAD',
+                    headers: {
+                        'X-Language': lang
+                    }
+                }).then(() => {
+                    // Reload the page to apply the language change
+                    window.location.reload();
+                });
+            }
+
+            // Set up language switcher
+            document.querySelectorAll('.lang-option').forEach(function(element) {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lang = this.getAttribute('data-lang');
+                    setLanguage(lang);
+                });
+            });
+
+            // Add HTMX headers for all requests
+            document.body.addEventListener('htmx:configRequest', function(event) {
+                // Get language from localStorage or use current locale
+                const lang = localStorage.getItem('preferredLanguage') || '{{currentLocale}}';
+                event.detail.headers['X-Language'] = lang;
+            });
+
+            // Add language headers to all fetch requests
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                options = options || {};
+                options.headers = options.headers || {};
+
+                // Get language from localStorage or use current locale
+                const lang = localStorage.getItem('preferredLanguage') || '{{currentLocale}}';
+                options.headers['X-Language'] = lang;
+
+                return originalFetch(url, options);
+            };
+
+            // Apply stored language preference on page load
+            const storedLang = localStorage.getItem('preferredLanguage');
+            if (storedLang && storedLang !== '{{currentLocale}}') {
+                // If stored language is different from current, set the language
+                setLanguage(storedLang);
             }
         });
     </script>

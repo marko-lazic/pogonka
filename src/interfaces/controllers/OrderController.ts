@@ -20,8 +20,8 @@ export class OrderController {
 
       if (!customerName || !taxNumber || !email) {
         res.status(400).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Missing required fields' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.missing_required_fields')
         });
         return;
       }
@@ -32,8 +32,8 @@ export class OrderController {
       return this.renderOrdersPage(req, res);
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to create order' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_create_order')
       });
     }
   }
@@ -50,8 +50,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -65,8 +65,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to confirm order' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_confirm_order')
       });
     }
   }
@@ -83,8 +83,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -98,8 +98,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to cancel order' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_cancel_order')
       });
     }
   }
@@ -116,8 +116,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -131,8 +131,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to mark order as paid' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_mark_as_paid')
       });
     }
   }
@@ -149,8 +149,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -164,8 +164,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to start production' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_start_production')
       });
     }
   }
@@ -182,8 +182,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -197,8 +197,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to start delivery' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_start_delivery')
       });
     }
   }
@@ -215,8 +215,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -230,8 +230,8 @@ export class OrderController {
       }
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: error instanceof Error ? error.message : 'Failed to complete billing' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_complete_billing')
       });
     }
   }
@@ -248,8 +248,8 @@ export class OrderController {
 
       if (!deleted) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -258,8 +258,8 @@ export class OrderController {
       return this.renderOrdersPage(req, res);
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: 'Failed to delete order' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('orders.failed_to_delete_order')
       });
     }
   }
@@ -325,7 +325,7 @@ export class OrderController {
 
       // Otherwise render the full page
       res.render('orders', { 
-        title: 'Orders - Pogonka',
+        title: `${res.__('orders.title')} - ${res.__('app.name')}`,
         orders: orderDtos,
         searchQuery: query, // Pass the search query to the view
         pagination: {
@@ -341,14 +341,14 @@ export class OrderController {
           end
         },
         breadcrumbs: [
-          { label: 'Home', url: '/' },
-          { label: 'Orders', url: '/orders' }
+          { label: res.__('common.home'), url: '/' },
+          { label: res.__('orders.title'), url: '/orders' }
         ]
       });
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: 'Failed to retrieve orders' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('orders.failed_to_retrieve_orders')
       });
     }
   }
@@ -365,8 +365,8 @@ export class OrderController {
 
       if (!order) {
         res.status(404).render('error', { 
-          title: 'Error - Pogonka',
-          message: 'Order not found' 
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
         });
         return;
       }
@@ -375,18 +375,18 @@ export class OrderController {
       const orderDto = OrderMapper.toDto(order, baseUrl);
 
       res.render('order-details', { 
-        title: `Order ${id} - Pogonka`,
+        title: `${res.__('orders.order_details')} ${id} - ${res.__('app.name')}`,
         order: orderDto,
         breadcrumbs: [
-          { label: 'Home', url: '/' },
-          { label: 'Orders', url: '/orders' },
+          { label: res.__('common.home'), url: '/' },
+          { label: res.__('orders.title'), url: '/orders' },
           { label: `${id}`, url: `/orders/${id}` }
         ]
       });
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: 'Failed to retrieve order details' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('orders.failed_to_retrieve_orders')
       });
     }
   }
@@ -399,17 +399,17 @@ export class OrderController {
   async renderCreateOrderPage(req: Request, res: Response): Promise<void> {
     try {
       res.render('create-order', { 
-        title: 'Create Order - Pogonka',
+        title: `${res.__('orders.create_new_order')} - ${res.__('app.name')}`,
         breadcrumbs: [
-          { label: 'Home', url: '/' },
-          { label: 'Orders', url: '/orders' },
-          { label: 'Create Order', url: '/orders/create' }
+          { label: res.__('common.home'), url: '/' },
+          { label: res.__('orders.title'), url: '/orders' },
+          { label: res.__('orders.create_new_order'), url: '/orders/create' }
         ]
       });
     } catch (error) {
       res.status(500).render('error', { 
-        title: 'Error - Pogonka',
-        message: 'Failed to render create order page' 
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('orders.failed_to_retrieve_orders')
       });
     }
   }

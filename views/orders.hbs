@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-6">
-    <h1 class="text-3xl font-bold mb-2">Orders</h1>
-    <p class="text-base-content opacity-70 mb-4">Manage your orders in <span class="font-semibold">Pogonka</span>!</p>
+    <h1 class="text-3xl font-bold mb-2">{{__ 'orders.title'}}</h1>
+    <p class="text-base-content opacity-70 mb-4">{{__ 'orders.manage_orders'}}</p>
 
     <!-- Keyboard shortcut script -->
     <script>
@@ -21,7 +21,7 @@
                     type="search" 
                     id="order-search"
                     name="q" 
-                    placeholder="Search orders..."
+                    placeholder="{{__ 'orders.search_placeholder'}}"
                     value="{{searchQuery}}"
                     class="grow" 
                     hx-get="/orders" 
@@ -41,14 +41,14 @@
             </label>
         </div>
         <a href="/orders/create" class="btn btn-primary">
-            Create New Order
+            {{__ 'orders.create_new_order'}}
         </a>
     </div>
 
     <!-- Order List -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title">Order List</h2>
+            <h2 class="card-title">{{__ 'orders.order_list'}}</h2>
 
             {{> order-table-container}}
         </div>

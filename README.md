@@ -13,7 +13,7 @@ This project is set up with auto-reload functionality for both server-side code 
 
 2. Start the development server with auto-reload:
    ```
-   npm run dev:watch
+   npm run dev
    ```
 
 ### What's Included

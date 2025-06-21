@@ -5,36 +5,36 @@
     <!-- Create Order Card -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title text-2xl">Create New Order</h2>
+            <h2 class="card-title text-2xl">{{__ 'orders.create_new_order'}}</h2>
             <div class="divider"></div>
 
             <form id="create-order-form" method="POST" action="/orders" hx-post="/orders" hx-target="body" hx-swap="outerHTML">
-                <div class="divider">Customer Information</div>
+                <div class="divider">{{__ 'orders.customer_information'}}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text">Customer Name</span>
+                            <span class="label-text">{{__ 'orders.customer_name'}}</span>
                         </label>
-                        <input type="text" name="customerName" placeholder="Enter customer name" class="input input-bordered w-full" required />
+                        <input type="text" name="customerName" placeholder="{{__ 'orders.enter_customer_name'}}" class="input input-bordered w-full" required />
                     </div>
 
                     <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text">Email</span>
+                            <span class="label-text">{{__ 'orders.customer_email'}}</span>
                         </label>
-                        <input type="email" name="email" placeholder="Enter email address" class="input input-bordered w-full" required />
+                        <input type="email" name="email" placeholder="{{__ 'orders.enter_email'}}" class="input input-bordered w-full" required />
                     </div>
 
                     <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text">Tax/VAT Number</span>
+                            <span class="label-text">{{__ 'orders.customer_tax_number'}}</span>
                         </label>
-                        <input type="text" name="taxNumber" placeholder="Enter tax/VAT number" class="input input-bordered w-full" required />
+                        <input type="text" name="taxNumber" placeholder="{{__ 'orders.enter_tax_number'}}" class="input input-bordered w-full" required />
                     </div>
                 </div>
 
-                <div class="divider">Order Items</div>
+                <div class="divider">{{__ 'orders.order_items'}}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- TODO order items here -->
@@ -43,11 +43,10 @@
                 <div class="divider"></div>
 
                 <div class="flex justify-end gap-2 mt-4">
-                    <a href="/orders" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Create Order</button>
+                    <a href="/orders" class="btn btn-ghost">{{__ 'common.cancel'}}</a>
+                    <button type="submit" class="btn btn-primary">{{__ 'orders.create_order'}}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
