@@ -16,14 +16,19 @@
     <!-- Search and Create New Order Button -->
     <div class="flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
         <div class="relative w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
-            <label class="input flex items-center">
+            <label class="input flex items-center sm:w-full">
+                <kbd class="kbd kbd-sm">⌘</kbd>
+                <kbd class="kbd kbd-sm">K</kbd>
+                <div id="search-spinner" class="htmx-indicator  ">
+                    <span class="loading loading-spinner loading-sm"></span>
+                </div>
                 <input 
                     type="search" 
                     id="order-search"
                     name="q" 
                     placeholder="{{__ 'orders.search_placeholder'}}"
                     value="{{searchQuery}}"
-                    class="grow" 
+                    class="grow"
                     hx-get="/orders" 
                     hx-trigger="input changed delay:300ms, search, keyup[key=='Enter']"
                     hx-target="#order-table-container" 
@@ -33,14 +38,10 @@
                     hx-indicator="#search-spinner"
                     autocomplete="off"
                 >
-                <kbd class="kbd kbd-sm">⌘</kbd>
-                <kbd class="kbd kbd-sm">K</kbd>
-                <div id="search-spinner" class="htmx-indicator absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <span class="loading loading-spinner loading-sm"></span>
-                </div>
             </label>
         </div>
-        <a href="/orders/create" class="btn btn-primary w-full sm:w-auto">
+
+        <a href="/orders/create" class="btn btn-primary">
             {{__ 'orders.create_new_order'}}
         </a>
     </div>
