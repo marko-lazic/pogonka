@@ -23,11 +23,13 @@ export class MockOrderRepository implements OrderRepository {
   }
 
   async findAll(): Promise<Order[]> {
-    return Array.from(this.orders.values());
+    return Array.from(this.orders.values())
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
   }
 
   async findWithPagination(limit: number, offset: number): Promise<{ orders: Order[], total: number }> {
-    const allOrders = Array.from(this.orders.values());
+    const allOrders = Array.from(this.orders.values())
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     const total = allOrders.length;
     const paginatedOrders = allOrders.slice(offset, offset + limit);
     return { orders: paginatedOrders, total };
@@ -73,7 +75,8 @@ export class MockOrderRepository implements OrderRepository {
       }
 
       return false;
-    });
+    })
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
     const total = filteredOrders.length;
     const paginatedOrders = filteredOrders.slice(offset, offset + limit);

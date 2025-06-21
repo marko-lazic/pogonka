@@ -6,7 +6,7 @@
                     <th>ID</th>
                     <th>Customer</th>
                     <th>Status</th>
-                    <th>Created At</th>
+                    <th>Timestamp</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -36,7 +36,14 @@
                             </div>
                         </td>
                         <td>
-                            {{formatDate this.createdAt}}
+                            <div class="flex flex-col gap-1">
+                                <div class="font-medium">{{formatDate this.createdAt}}</div>
+                                {{#if (ne this.createdAt this.updatedAt)}}
+                                    <div class="text-xs opacity-70">
+                                        <span class="badge badge-sm badge-ghost">Updated: {{formatDate this.updatedAt}}</span>
+                                    </div>
+                                {{/if}}
+                            </div>
                         </td>
                         <td>
                             <div class="dropdown dropdown-end">
