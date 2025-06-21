@@ -18,4 +18,4 @@ public/js/htmx.min.js
 public/js/htmx.min.js.map
 
 # Generated CSS files
-public/css/tailwind-generated.css
+public/css/output.css
