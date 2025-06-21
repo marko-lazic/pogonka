@@ -1,0 +1,53 @@
+<!-- Create Order -->
+<div class="flex flex-col gap-4">
+    <!-- Breadcrumbs are handled by the layout -->
+
+    <!-- Create Order Card -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl">Create New Order</h2>
+            <div class="divider"></div>
+
+            <form id="create-order-form" method="POST" action="/orders" hx-post="/orders" hx-target="body" hx-swap="outerHTML">
+                <div class="divider">Customer Information</div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">Customer Name</span>
+                        </label>
+                        <input type="text" name="customerName" placeholder="Enter customer name" class="input input-bordered w-full" required />
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">Email</span>
+                        </label>
+                        <input type="email" name="email" placeholder="Enter email address" class="input input-bordered w-full" required />
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">Tax/VAT Number</span>
+                        </label>
+                        <input type="text" name="taxNumber" placeholder="Enter tax/VAT number" class="input input-bordered w-full" required />
+                    </div>
+                </div>
+
+                <div class="divider">Order Items</div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- TODO order items here -->
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <a href="/orders" class="btn btn-ghost">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Create Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

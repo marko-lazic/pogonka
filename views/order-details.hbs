@@ -1,0 +1,86 @@
+<!-- Order Details -->
+<div class="flex flex-col gap-4">
+    <!-- Breadcrumbs are handled by the layout -->
+
+    <!-- Order Details Card -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl">Order Details</h2>
+            <div class="divider"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm opacity-70">Order ID</p>
+                    <p class="font-semibold">{{order.id}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">Status</p>
+                    <div class="badge 
+                        {{#if (eq order.status 'Created')}}badge-neutral{{/if}}
+                        {{#if (eq order.status 'Confirmed')}}badge-primary{{/if}}
+                        {{#if (eq order.status 'Canceled')}}badge-error{{/if}}
+                        {{#if (eq order.status 'Payment of Avans')}}badge-success{{/if}}
+                        {{#if (eq order.status 'Production and Packaging')}}badge-warning{{/if}}
+                        {{#if (eq order.status 'Delivery')}}badge-secondary{{/if}}
+                        {{#if (eq order.status 'Project Billing')}}badge-info{{/if}}">
+                        {{order.status}}
+                    </div>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">Created At</p>
+                    <p>{{formatDate order.createdAt}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">Updated At</p>
+                    <p>{{formatDate order.updatedAt}}</p>
+                </div>
+            </div>
+
+            <div class="divider">Customer Information</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm opacity-70">Name</p>
+                    <p class="font-semibold">{{order.customerInfo.name}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">Email</p>
+                    <p>{{order.customerInfo.email}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">Tax/VAT Number</p>
+                    <p>{{order.customerInfo.taxNumber}}</p>
+                </div>
+            </div>
+
+            <div class="divider">Actions</div>
+
+            <div class="flex flex-wrap gap-2">
+                {{#each order._links}}
+                    {{#if (ne this.rel 'self')}}
+                        {{#if (ne this.rel 'update')}}
+                            {{#if (ne this.rel 'delete')}}
+                                <button 
+                                    class="btn btn-sm btn-primary"
+                                    hx-post="{{this.href}}"
+                                    hx-target="body"
+                                    hx-swap="outerHTML">
+                                    {{capitalize this.rel}}
+                                </button>
+                            {{/if}}
+                        {{/if}}
+                    {{/if}}
+                {{/each}}
+                <button 
+                    class="btn btn-sm btn-error"
+                    hx-delete="/orders/{{order.id}}"
+                    hx-confirm="Are you sure you want to delete this order?"
+                    hx-target="body"
+                    hx-swap="outerHTML">
+                    Delete
+                </button>
+                <a href="/orders" class="btn btn-sm btn-ghost">Back to Orders</a>
+            </div>
+        </div>
+    </div>
+</div>

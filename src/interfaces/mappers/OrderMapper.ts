@@ -27,11 +27,6 @@ export class OrderMapper {
         method: 'GET'
       },
       {
-        rel: 'update',
-        href: `${baseUrl}/orders/${order.id}`,
-        method: 'PUT'
-      },
-      {
         rel: 'delete',
         href: `${baseUrl}/orders/${order.id}`,
         method: 'DELETE'

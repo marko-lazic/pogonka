@@ -59,16 +59,13 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
-// Order routes
-app.get('/orders', orderController.getAllOrders.bind(orderController));
+// View routes
+app.get('/orders', orderController.renderOrdersPage.bind(orderController));
+app.get('/orders/create', orderController.renderCreateOrderPage.bind(orderController));
+app.get('/orders/:id', orderController.renderOrderDetailsPage.bind(orderController));
+
+// Order action routes
 app.post('/orders', orderController.createOrder.bind(orderController));
-
-// View routes - must be before the :id routes to avoid conflicts
-app.get('/orders/view', orderController.renderOrdersPage.bind(orderController));
-
-// Order routes with ID parameter
-app.get('/orders/:id', orderController.getOrderById.bind(orderController));
-app.put('/orders/:id', orderController.updateOrderStatus.bind(orderController));
 app.delete('/orders/:id', orderController.deleteOrder.bind(orderController));
 
 // Order status transition routes
@@ -82,5 +79,5 @@ app.post('/orders/:id/complete-billing', orderController.completeOrderBilling.bi
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port} ✨`);
-  console.log(`View orders at http://localhost:${port}/orders/view`);
+  console.log(`View orders at http://localhost:${port}/orders`);
 });

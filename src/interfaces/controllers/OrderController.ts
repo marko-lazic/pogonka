@@ -10,61 +10,6 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   /**
-   * Get all orders
-   * @param req The HTTP request
-   * @param res The HTTP response
-   */
-  async getAllOrders(req: Request, res: Response): Promise<void> {
-    try {
-      const orders = await this.orderService.getAllOrders();
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDtos = OrderMapper.toDtoList(orders, baseUrl);
-      
-      res.json({
-        orders: orderDtos,
-        _links: [
-          {
-            rel: 'self',
-            href: `${baseUrl}/orders`,
-            method: 'GET'
-          },
-          {
-            rel: 'create',
-            href: `${baseUrl}/orders`,
-            method: 'POST'
-          }
-        ]
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to retrieve orders' });
-    }
-  }
-
-  /**
-   * Get an order by ID
-   * @param req The HTTP request
-   * @param res The HTTP response
-   */
-  async getOrderById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const order = await this.orderService.getOrderById(id);
-      
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' });
-        return;
-      }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to retrieve order' });
-    }
-  }
-
-  /**
    * Create a new order
    * @param req The HTTP request
    * @param res The HTTP response
@@ -72,58 +17,24 @@ export class OrderController {
   async createOrder(req: Request, res: Response): Promise<void> {
     try {
       const { customerName, taxNumber, email } = req.body;
-      
-      if (!customerName || !taxNumber || !email) {
-        res.status(400).json({ error: 'Missing required fields' });
-        return;
-      }
-      
-      const order = await this.orderService.createOrder(customerName, taxNumber, email);
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.status(201).json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Failed to create order' });
-      }
-    }
-  }
 
-  /**
-   * Update an order's status
-   * @param req The HTTP request
-   * @param res The HTTP response
-   */
-  async updateOrderStatus(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
-      
-      if (!status || !Object.values(OrderStatus).includes(status)) {
-        res.status(400).json({ error: 'Invalid status' });
+      if (!customerName || !taxNumber || !email) {
+        res.status(400).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Missing required fields' 
+        });
         return;
       }
-      
-      const order = await this.orderService.updateOrderStatus(id, status);
-      
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' });
-        return;
-      }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
+
+      const order = await this.orderService.createOrder(customerName, taxNumber, email);
+
+      // Redirect to the orders page
+      return this.renderOrdersPage(req, res);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Failed to update order' });
-      }
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to create order' 
+      });
     }
   }
 
@@ -136,22 +47,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.confirmOrder(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to confirm order' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to confirm order' 
+      });
     }
   }
 
@@ -164,22 +80,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.cancelOrder(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to cancel order' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to cancel order' 
+      });
     }
   }
 
@@ -192,22 +113,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.markOrderAsPaid(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to mark order as paid' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to mark order as paid' 
+      });
     }
   }
 
@@ -220,22 +146,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.startOrderProduction(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to start production' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to start production' 
+      });
     }
   }
 
@@ -248,22 +179,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.startOrderDelivery(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to start delivery' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to start delivery' 
+      });
     }
   }
 
@@ -276,22 +212,27 @@ export class OrderController {
     try {
       const { id } = req.params;
       const order = await this.orderService.completeOrderBilling(id);
-      
+
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const orderDto = OrderMapper.toDto(order, baseUrl);
-      
-      res.json(orderDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+
+      // If the request came from the details page, render the details page
+      if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
+        return this.renderOrderDetailsPage(req, res);
       } else {
-        res.status(500).json({ error: 'Failed to complete billing' });
+        // Otherwise render the orders page
+        return this.renderOrdersPage(req, res);
       }
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: error instanceof Error ? error.message : 'Failed to complete billing' 
+      });
     }
   }
 
@@ -304,15 +245,22 @@ export class OrderController {
     try {
       const { id } = req.params;
       const deleted = await this.orderService.deleteOrder(id);
-      
+
       if (!deleted) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
         return;
       }
-      
-      res.status(204).end();
+
+      // Always redirect to the orders page after delete
+      return this.renderOrdersPage(req, res);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete order' });
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: 'Failed to delete order' 
+      });
     }
   }
 
@@ -326,15 +274,80 @@ export class OrderController {
       const orders = await this.orderService.getAllOrders();
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const orderDtos = OrderMapper.toDtoList(orders, baseUrl);
-      
+
       res.render('orders', { 
         title: 'Orders - Pogonka',
-        orders: orderDtos
+        orders: orderDtos,
+        breadcrumbs: [
+          { label: 'Home', url: '/' },
+          { label: 'Orders', url: '/orders' }
+        ]
       });
     } catch (error) {
       res.status(500).render('error', { 
         title: 'Error - Pogonka',
         message: 'Failed to retrieve orders' 
+      });
+    }
+  }
+
+  /**
+   * Render the order details page
+   * @param req The HTTP request
+   * @param res The HTTP response
+   */
+  async renderOrderDetailsPage(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const order = await this.orderService.getOrderById(id);
+
+      if (!order) {
+        res.status(404).render('error', { 
+          title: 'Error - Pogonka',
+          message: 'Order not found' 
+        });
+        return;
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const orderDto = OrderMapper.toDto(order, baseUrl);
+
+      res.render('order-details', { 
+        title: `Order ${id} - Pogonka`,
+        order: orderDto,
+        breadcrumbs: [
+          { label: 'Home', url: '/' },
+          { label: 'Orders', url: '/orders' },
+          { label: `Order ${id.substring(0, 8)}...`, url: `/orders/${id}` }
+        ]
+      });
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: 'Failed to retrieve order details' 
+      });
+    }
+  }
+
+  /**
+   * Render the create order page
+   * @param req The HTTP request
+   * @param res The HTTP response
+   */
+  async renderCreateOrderPage(req: Request, res: Response): Promise<void> {
+    try {
+      res.render('create-order', { 
+        title: 'Create Order - Pogonka',
+        breadcrumbs: [
+          { label: 'Home', url: '/' },
+          { label: 'Orders', url: '/orders' },
+          { label: 'Create Order', url: '/orders/create' }
+        ]
+      });
+    } catch (error) {
+      res.status(500).render('error', { 
+        title: 'Error - Pogonka',
+        message: 'Failed to render create order page' 
       });
     }
   }
