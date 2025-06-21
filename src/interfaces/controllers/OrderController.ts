@@ -60,6 +60,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -93,6 +103,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -126,6 +146,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -159,6 +189,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -192,6 +232,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -225,6 +275,16 @@ export class OrderController {
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
         return this.renderOrderDetailsPage(req, res);
       } else {
+        // Copy pagination parameters from body to query if they exist
+        if (req.body.page) {
+          req.query.page = req.body.page;
+        }
+        if (req.body.size) {
+          req.query.size = req.body.size;
+        }
+        if (req.body.q) {
+          req.query.q = req.body.q;
+        }
         // Otherwise render the orders page
         return this.renderOrdersPage(req, res);
       }
@@ -252,6 +312,17 @@ export class OrderController {
           message: res.__('orders.order_not_found')
         });
         return;
+      }
+
+      // Copy pagination parameters from body to query if they exist
+      if (req.body.page) {
+        req.query.page = req.body.page;
+      }
+      if (req.body.size) {
+        req.query.size = req.body.size;
+      }
+      if (req.body.q) {
+        req.query.q = req.body.q;
       }
 
       // Always redirect to the orders page after delete

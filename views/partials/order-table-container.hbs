@@ -64,7 +64,8 @@
                                                             <button 
                                                                 hx-post="{{this.href}}"
                                                                 hx-target="body"
-                                                                hx-swap="outerHTML">
+                                                                hx-swap="outerHTML"
+                                                                hx-include="[name='page'], [name='size'], [name='q']">
                                                                 {{__ (concat 'actions.' this.rel)}}
                                                             </button>
                                                         </li>
@@ -78,7 +79,8 @@
                                                 hx-delete="/orders/{{this.id}}"
                                                 hx-confirm="{{__ 'orders.delete_confirmation'}}"
                                                 hx-target="body"
-                                                hx-swap="outerHTML">
+                                                hx-swap="outerHTML"
+                                                hx-include="[name='page'], [name='size'], [name='q']">
                                                 {{__ 'common.delete'}}
                                             </button>
                                         </li>
@@ -144,7 +146,8 @@
                                                         <button 
                                                             hx-post="{{this.href}}"
                                                             hx-target="body"
-                                                            hx-swap="outerHTML">
+                                                            hx-swap="outerHTML"
+                                                            hx-include="[name='page'], [name='size'], [name='q']">
                                                             {{__ (concat 'actions.' this.rel)}}
                                                         </button>
                                                     </li>
@@ -158,7 +161,8 @@
                                             hx-delete="/orders/{{this.id}}"
                                             hx-confirm="{{__ 'orders.delete_confirmation'}}"
                                             hx-target="body"
-                                            hx-swap="outerHTML">
+                                            hx-swap="outerHTML"
+                                            hx-include="[name='page'], [name='size'], [name='q']">
                                             {{__ 'common.delete'}}
                                         </button>
                                     </li>
