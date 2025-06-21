@@ -8,7 +8,7 @@
                         <th>{{__ 'orders.id'}}</th>
                         <th>{{__ 'orders.customer'}}</th>
                         <th>{{__ 'orders.status'}}</th>
-                        <th>{{__ 'orders.timestamp'}}</th>
+                        <th class="hidden lg:table-cell">{{__ 'orders.timestamp'}}</th>
                         <th>{{__ 'orders.actions'}}</th>
                     </tr>
                 </thead>
@@ -26,7 +26,7 @@
                                 <div class="text-sm opacity-70">{{__ 'orders.vat'}}: {{this.customerInfo.taxNumber}}</div>
                             </td>
                             <td>
-                                <div class="badge 
+                                <div class="badge
                                     {{#if (eq this.status 'created')}}badge-neutral{{/if}}
                                     {{#if (eq this.status 'confirmed')}}badge-primary{{/if}}
                                     {{#if (eq this.status 'canceled')}}badge-error{{/if}}
@@ -37,7 +37,7 @@
                                     {{translateStatus this.status}}
                                 </div>
                             </td>
-                            <td>
+                            <td class="hidden lg:table-cell">
                                 <div class="flex flex-col gap-1">
                                     <div class="font-medium">{{formatDate this.createdAt}}</div>
                                     {{#if (ne this.createdAt this.updatedAt)}}
@@ -102,7 +102,7 @@
                             <a href="/orders/{{this.id}}" class="link link-hover font-medium text-lg">
                                 {{this.id}}
                             </a>
-                            <div class="badge 
+                            <div class="badge badge-auto-height
                                 {{#if (eq this.status 'created')}}badge-neutral{{/if}}
                                 {{#if (eq this.status 'confirmed')}}badge-primary{{/if}}
                                 {{#if (eq this.status 'canceled')}}badge-error{{/if}}

@@ -22,7 +22,7 @@
   },
   "orders": {
     "title": "Porudžbine",
-    "manage_orders": "Upravljajte vašim porudžbinama u Pogonci!",
+    "manage_orders": "Upravljajte porudžbinama",
     "search_placeholder": "Pretraži porudžbine...",
     "create_new_order": "Kreiraj novu porudžbinu",
     "order_list": "Lista porudžbina",
