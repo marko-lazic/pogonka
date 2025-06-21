@@ -36,7 +36,11 @@ export class MockOrderRepository implements OrderRepository {
   }
 
   async searchWithPagination(query: string, limit: number, offset: number): Promise<{ orders: Order[], total: number }> {
-    if (!query || query.trim() === '') {
+    if (!query) {
+      return this.findWithPagination(limit, offset);
+    }
+
+    if (query.trim() === '') {
       return this.findWithPagination(limit, offset);
     }
 
@@ -59,10 +63,6 @@ export class MockOrderRepository implements OrderRepository {
         return true;
       }
 
-      // Search by status (as displayed on screen)
-      if (order.status.toLowerCase().includes(normalizedQuery)) {
-        return true;
-      }
 
       // Search by formatted date (as displayed on screen)
       // Using different date formats to accommodate various user inputs
