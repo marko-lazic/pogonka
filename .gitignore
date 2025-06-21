@@ -2,11 +2,13 @@
 /out-tsc
 
 /node_modules
+/dist
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /.pnp
 .pnp.js
+package-lock.json
 
 .vscode/*
 .idea/*
