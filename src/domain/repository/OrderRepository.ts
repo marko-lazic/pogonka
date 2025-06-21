@@ -28,6 +28,15 @@ export interface OrderRepository {
   findWithPagination(limit: number, offset: number): Promise<{ orders: Order[], total: number }>;
 
   /**
+   * Search orders with pagination
+   * @param query The search query string
+   * @param limit The maximum number of orders to return
+   * @param offset The number of orders to skip
+   * @returns A Promise that resolves to an object containing the matching orders and total count
+   */
+  searchWithPagination(query: string, limit: number, offset: number): Promise<{ orders: Order[], total: number }>;
+
+  /**
    * Save an order (create or update)
    * @param order The order to save
    * @returns A Promise that resolves to the saved Order

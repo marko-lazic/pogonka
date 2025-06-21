@@ -275,9 +275,17 @@ export class OrderController {
       const size = parseInt(req.query.size as string) || 5; // Default page size is 5
       const page = parseInt(req.query.page as string) || 1; // Default page is 1
       const offset = (page - 1) * size;
+      const query = req.query.q as string || ''; // Get search query from request
 
-      // Get paginated orders
-      const { orders, total } = await this.orderService.getOrdersWithPagination(size, offset);
+      // Get paginated orders (with or without search)
+      let ordersResult;
+      if (query) {
+        ordersResult = await this.orderService.searchOrdersWithPagination(query, size, offset);
+      } else {
+        ordersResult = await this.orderService.getOrdersWithPagination(size, offset);
+      }
+
+      const { orders, total } = ordersResult;
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const orderDtos = OrderMapper.toDtoList(orders, baseUrl);
 
@@ -287,12 +295,39 @@ export class OrderController {
       const hasPrevPage = page > 1;
       const nextPage = page + 1;
       const prevPage = page - 1;
-      const start = offset + 1;
+      const start = total > 0 ? offset + 1 : 0;
       const end = Math.min(offset + size, total);
 
+      // Check if this is an HTMX request for the table container
+      const isHtmxRequest = req.headers['hx-request'] === 'true';
+      const targetId = req.headers['hx-target'] as string;
+
+      if (isHtmxRequest && (targetId === 'order-table-container' || targetId === '#order-table-container' || targetId === '.card-body')) {
+        // If it's an HTMX request for the table container, render only that part
+        return res.render('partials/order-table-container', {
+          layout: false, // Don't use the layout for the partial
+          orders: orderDtos,
+          searchQuery: query,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            hasNextPage,
+            hasPrevPage,
+            nextPage,
+            prevPage,
+            size,
+            total,
+            start,
+            end
+          }
+        });
+      }
+
+      // Otherwise render the full page
       res.render('orders', { 
         title: 'Orders - Pogonka',
         orders: orderDtos,
+        searchQuery: query, // Pass the search query to the view
         pagination: {
           currentPage: page,
           totalPages,

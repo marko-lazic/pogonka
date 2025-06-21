@@ -3,6 +3,7 @@ import { OrderRepository } from '../../domain/repository/OrderRepository';
 import { CustomerInfo } from '../../domain/model/CustomerInfo';
 import { OrderStatus } from '../../domain/model/OrderStatus';
 import {PidGenerator} from "../util/PidGenerator";
+import { format } from 'date-fns';
 
 /**
  * MockOrderRepository is an in-memory implementation of the OrderRepository interface.
@@ -29,6 +30,54 @@ export class MockOrderRepository implements OrderRepository {
     const allOrders = Array.from(this.orders.values());
     const total = allOrders.length;
     const paginatedOrders = allOrders.slice(offset, offset + limit);
+    return { orders: paginatedOrders, total };
+  }
+
+  async searchWithPagination(query: string, limit: number, offset: number): Promise<{ orders: Order[], total: number }> {
+    if (!query || query.trim() === '') {
+      return this.findWithPagination(limit, offset);
+    }
+
+    const normalizedQuery = query.toLowerCase().trim();
+    const allOrders = Array.from(this.orders.values());
+
+    const filteredOrders = allOrders.filter(order => {
+      // Search by order ID
+      if (order.id.toLowerCase().includes(normalizedQuery)) {
+        return true;
+      }
+
+      // Search by customer info (name, tax number, email)
+      const customerInfo = order.customerInfo;
+      if (
+        customerInfo.name.toLowerCase().includes(normalizedQuery) ||
+        customerInfo.taxNumber.toLowerCase().includes(normalizedQuery) ||
+        customerInfo.email.toLowerCase().includes(normalizedQuery)
+      ) {
+        return true;
+      }
+
+      // Search by status (as displayed on screen)
+      if (order.status.toLowerCase().includes(normalizedQuery)) {
+        return true;
+      }
+
+      // Search by formatted date (as displayed on screen)
+      // Using different date formats to accommodate various user inputs
+      const dateFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy', 'dd.MM.yyyy'];
+      for (const dateFormat of dateFormats) {
+        const formattedDate = format(order.createdAt, dateFormat).toLowerCase();
+        if (formattedDate.includes(normalizedQuery)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    const total = filteredOrders.length;
+    const paginatedOrders = filteredOrders.slice(offset, offset + limit);
+
     return { orders: paginatedOrders, total };
   }
 
