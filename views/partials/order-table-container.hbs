@@ -1,29 +1,105 @@
 <div id="order-table-container">
 {{#if orders.length}}
-        <table class="table table-zebra w-full">
-            <thead>
-                <tr>
-                    <th>{{__ 'orders.id'}}</th>
-                    <th>{{__ 'orders.customer'}}</th>
-                    <th>{{__ 'orders.status'}}</th>
-                    <th>{{__ 'orders.timestamp'}}</th>
-                    <th>{{__ 'orders.actions'}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each orders}}
+        <!-- Desktop table (hidden on small screens) -->
+        <div class="hidden md:block">
+            <table class="table table-zebra w-full">
+                <thead>
                     <tr>
-                        <td>
-                            <a href="/orders/{{this.id}}" class="link link-hover font-medium">
+                        <th>{{__ 'orders.id'}}</th>
+                        <th>{{__ 'orders.customer'}}</th>
+                        <th>{{__ 'orders.status'}}</th>
+                        <th>{{__ 'orders.timestamp'}}</th>
+                        <th>{{__ 'orders.actions'}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each orders}}
+                        <tr>
+                            <td>
+                                <a href="/orders/{{this.id}}" class="link link-hover font-medium">
+                                    {{this.id}}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="font-medium">{{this.customerInfo.name}}</div>
+                                <div class="text-sm opacity-70">{{this.customerInfo.email}}</div>
+                                <div class="text-sm opacity-70">{{__ 'orders.vat'}}: {{this.customerInfo.taxNumber}}</div>
+                            </td>
+                            <td>
+                                <div class="badge 
+                                    {{#if (eq this.status 'Created')}}badge-neutral{{/if}}
+                                    {{#if (eq this.status 'Confirmed')}}badge-primary{{/if}}
+                                    {{#if (eq this.status 'Canceled')}}badge-error{{/if}}
+                                    {{#if (eq this.status 'Payment of Avans')}}badge-success{{/if}}
+                                    {{#if (eq this.status 'Production and Packaging')}}badge-warning{{/if}}
+                                    {{#if (eq this.status 'Delivery')}}badge-secondary{{/if}}
+                                    {{#if (eq this.status 'Project Billing')}}badge-info{{/if}}">
+                                    {{translateStatus this.status}}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-col gap-1">
+                                    <div class="font-medium">{{formatDate this.createdAt}}</div>
+                                    {{#if (ne this.createdAt this.updatedAt)}}
+                                        <div class="text-xs opacity-70">
+                                            <span class="badge badge-sm badge-ghost">{{__ 'orders.updated'}}: {{formatDate this.updatedAt}}</span>
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="dropdown dropdown-end">
+                                    <div tabindex="0" role="button" class="btn btn-sm btn-ghost">
+                                        {{__ 'common.actions'}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                        </svg>
+                                    </div>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                        {{#each this._links}}
+                                            {{#if (ne this.rel 'self')}}
+                                                {{#if (ne this.rel 'update')}}
+                                                    {{#if (ne this.rel 'delete')}}
+                                                        <li>
+                                                            <button 
+                                                                hx-post="{{this.href}}"
+                                                                hx-target="body"
+                                                                hx-swap="outerHTML">
+                                                                {{__ (concat 'actions.' this.rel)}}
+                                                            </button>
+                                                        </li>
+                                                    {{/if}}
+                                                {{/if}}
+                                            {{/if}}
+                                        {{/each}}
+                                        <li>
+                                            <button 
+                                                class="text-error"
+                                                hx-delete="/orders/{{this.id}}"
+                                                hx-confirm="{{__ 'orders.delete_confirmation'}}"
+                                                hx-target="body"
+                                                hx-swap="outerHTML">
+                                                {{__ 'common.delete'}}
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile card view (visible only on small screens) -->
+        <div class="grid grid-cols-1 gap-4 md:hidden">
+            {{#each orders}}
+                <div class="card bg-base-200 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="flex justify-between items-start">
+                            <a href="/orders/{{this.id}}" class="link link-hover font-medium text-lg">
                                 {{this.id}}
                             </a>
-                        </td>
-                        <td>
-                            <div class="font-medium">{{this.customerInfo.name}}</div>
-                            <div class="text-sm opacity-70">{{this.customerInfo.email}}</div>
-                            <div class="text-sm opacity-70">{{__ 'orders.vat'}}: {{this.customerInfo.taxNumber}}</div>
-                        </td>
-                        <td>
                             <div class="badge 
                                 {{#if (eq this.status 'Created')}}badge-neutral{{/if}}
                                 {{#if (eq this.status 'Confirmed')}}badge-primary{{/if}}
@@ -34,20 +110,26 @@
                                 {{#if (eq this.status 'Project Billing')}}badge-info{{/if}}">
                                 {{translateStatus this.status}}
                             </div>
-                        </td>
-                        <td>
-                            <div class="flex flex-col gap-1">
-                                <div class="font-medium">{{formatDate this.createdAt}}</div>
-                                {{#if (ne this.createdAt this.updatedAt)}}
-                                    <div class="text-xs opacity-70">
-                                        <span class="badge badge-sm badge-ghost">{{__ 'orders.updated'}}: {{formatDate this.updatedAt}}</span>
-                                    </div>
-                                {{/if}}
-                            </div>
-                        </td>
-                        <td>
+                        </div>
+
+                        <div class="mt-2">
+                            <div class="font-medium">{{this.customerInfo.name}}</div>
+                            <div class="text-sm opacity-70">{{this.customerInfo.email}}</div>
+                            <!-- Tax number hidden on mobile -->
+                        </div>
+
+                        <div class="text-sm mt-2">
+                            <span class="opacity-70">{{__ 'orders.timestamp'}}:</span> {{formatDate this.createdAt}}
+                            {{#if (ne this.createdAt this.updatedAt)}}
+                                <div class="text-xs mt-1">
+                                    <span class="badge badge-sm badge-ghost">{{__ 'orders.updated'}}: {{formatDate this.updatedAt}}</span>
+                                </div>
+                            {{/if}}
+                        </div>
+
+                        <div class="card-actions justify-end mt-3">
                             <div class="dropdown dropdown-end">
-                                <div tabindex="0" role="button" class="btn btn-sm btn-ghost">
+                                <div tabindex="0" role="button" class="btn btn-sm">
                                     {{__ 'common.actions'}}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
@@ -82,58 +164,66 @@
                                     </li>
                                 </ul>
                             </div>
-                        </td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
 
         <!-- Pagination -->
-        <div class="flex mt-4 justify-between items-center">
+        <div class="flex flex-col sm:flex-row mt-4 gap-3 sm:justify-between sm:items-center">
             <!-- Pagination Info -->
-            <div class="text-sm">
+            <div class="text-sm text-center sm:text-left order-2 sm:order-1">
                 {{__ 'orders.showing_orders' start=pagination.start end=pagination.end total=pagination.total}}
             </div>
 
             <!-- Pagination Controls and Page Size -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center justify-center sm:justify-end gap-2 sm:gap-4 order-1 sm:order-2">
                 <!-- Previous Button -->
-                <div class="w-24 text-center">
+                <div class="w-20 sm:w-24 text-center">
                     {{#if pagination.hasPrevPage}}
                         <button 
                             hx-get="/orders?page={{pagination.prevPage}}&size={{pagination.size}}{{#if searchQuery}}&q={{searchQuery}}{{/if}}" 
                             hx-target="#order-table-container" 
                             hx-swap="outerHTML"
                             hx-push-url="true"
-                            class="btn btn-outline w-full">
-                            {{__ 'common.previous'}}
+                            class="btn btn-sm sm:btn-md btn-outline w-full">
+                            <span class="hidden sm:inline">{{__ 'common.previous'}}</span>
+                            <span class="sm:hidden">←</span>
                         </button>
                     {{else}}
-                        <button class="btn btn-outline btn-disabled w-full" disabled>{{__ 'common.previous'}}</button>
+                        <button class="btn btn-sm sm:btn-md btn-outline btn-disabled w-full" disabled>
+                            <span class="hidden sm:inline">{{__ 'common.previous'}}</span>
+                            <span class="sm:hidden">←</span>
+                        </button>
                     {{/if}}
                 </div>
 
                 <!-- Next Button -->
-                <div class="w-24 text-center">
+                <div class="w-20 sm:w-24 text-center">
                     {{#if pagination.hasNextPage}}
                         <button 
                             hx-get="/orders?page={{pagination.nextPage}}&size={{pagination.size}}{{#if searchQuery}}&q={{searchQuery}}{{/if}}" 
                             hx-target="#order-table-container" 
                             hx-swap="outerHTML"
                             hx-push-url="true"
-                            class="btn btn-outline w-full">
-                            {{__ 'common.next'}}
+                            class="btn btn-sm sm:btn-md btn-outline w-full">
+                            <span class="hidden sm:inline">{{__ 'common.next'}}</span>
+                            <span class="sm:hidden">→</span>
                         </button>
                     {{else}}
-                        <button class="btn btn-outline btn-disabled w-full" disabled>{{__ 'common.next'}}</button>
+                        <button class="btn btn-sm sm:btn-md btn-outline btn-disabled w-full" disabled>
+                            <span class="hidden sm:inline">{{__ 'common.next'}}</span>
+                            <span class="sm:hidden">→</span>
+                        </button>
                     {{/if}}
                 </div>
 
                 <!-- Page Size Selector -->
-                <div class="flex items-center gap-2">
-                    <span class="text-sm">{{__ 'common.size'}}:</span>
+                <div class="flex items-center gap-1 sm:gap-2">
+                    <span class="text-xs sm:text-sm">{{__ 'common.size'}}:</span>
                     <select 
-                        class="select select-bordered select-sm" 
+                        class="select select-bordered select-xs sm:select-sm" 
                         hx-get="/orders" 
                         hx-target="#order-table-container" 
                         hx-swap="outerHTML" 
