@@ -25,6 +25,13 @@ export class MockOrderRepository implements OrderRepository {
     return Array.from(this.orders.values());
   }
 
+  async findWithPagination(limit: number, offset: number): Promise<{ orders: Order[], total: number }> {
+    const allOrders = Array.from(this.orders.values());
+    const total = allOrders.length;
+    const paginatedOrders = allOrders.slice(offset, offset + limit);
+    return { orders: paginatedOrders, total };
+  }
+
   async save(order: Order): Promise<Order> {
     this.orders.set(order.id, order);
     return order;
@@ -39,35 +46,58 @@ export class MockOrderRepository implements OrderRepository {
   }
 
   private initializeSampleData(): void {
-    // Create some sample customer info
-    const customer1 = new CustomerInfo(
-      'Acme Corporation',
-      '123456789',
-      'contact@acme.com'
-    );
+    // Serbian company names
+    const companyNames = [
+      'Telekom Srbija',
+      'NIS - Naftna Industrija Srbije',
+      'Elektroprivreda Srbije',
+      'Delta Holding',
+      'Komercijalna Banka',
+      'Hemofarm',
+      'Frikom',
+      'Jaffa',
+      'Imlek',
+      'Bambi',
+      'Knjaz Miloš',
+      'Zlatiborac',
+      'Štark',
+      'Metalac',
+      'Simpo',
+      'Soko Štark',
+      'Dijamant',
+      'Nectar',
+      'Carnex',
+      'Matijević'
+    ];
 
-    const customer2 = new CustomerInfo(
-      'Globex Industries',
-      '987654321',
-      'info@globex.com'
-    );
+    // Serbian domains
+    const domains = ['rs', 'co.rs', 'org.rs', 'edu.rs', 'in.rs'];
 
-    const customer3 = new CustomerInfo(
-      'Stark Enterprises',
-      '456789123',
-      'tony@stark.com'
-    );
+    // Generate random orders with Serbian domain information
+    for (let i = 0; i < 20; i++) {
+      // Generate random company name
+      const companyName = companyNames[Math.floor(Math.random() * companyNames.length)];
 
-    // Create some sample orders
-    const order1 = new Order(this.idGenerator.id(), customer1, OrderStatus.CONFIRMED);
-    const order2 = new Order(this.idGenerator.id(), customer2, OrderStatus.PAYMENT_OF_AVANS);
-    const order3 = new Order(this.idGenerator.id(), customer3, OrderStatus.PRODUCTION_AND_PACKAGING);
-    const order4 = new Order(this.idGenerator.id(), customer1, OrderStatus.CREATED);
+      // Generate random tax number (PIB in Serbia is 9 digits)
+      const taxNumber = Math.floor(100000000 + Math.random() * 900000000).toString();
 
-    // Add orders to the map
-    this.orders.set(order1.id, order1);
-    this.orders.set(order2.id, order2);
-    this.orders.set(order3.id, order3);
-    this.orders.set(order4.id, order4);
+      // Generate random email
+      const companySlug = companyName.toLowerCase().replace(/\s+/g, '');
+      const domain = domains[Math.floor(Math.random() * domains.length)];
+      const email = `info@${companySlug}.${domain}`;
+
+      // Create customer info
+      const customer = new CustomerInfo(companyName, taxNumber, email);
+
+      // Randomly select an order status
+      const statuses = Object.values(OrderStatus);
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+      // Create order
+      const order = new Order(this.idGenerator.id(), customer, status);
+
+      // Add order to the map
+      this.orders.set(order.id, order);
+    }
   }
 }

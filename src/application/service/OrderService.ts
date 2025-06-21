@@ -20,6 +20,16 @@ export class OrderService {
   }
 
   /**
+   * Get orders with pagination
+   * @param limit The maximum number of orders to return
+   * @param offset The number of orders to skip
+   * @returns A Promise that resolves to an object containing the orders and total count
+   */
+  async getOrdersWithPagination(limit: number, offset: number): Promise<{ orders: Order[], total: number }> {
+    return this.orderRepository.findWithPagination(limit, offset);
+  }
+
+  /**
    * Get an order by its ID
    * @param id The ID of the order to get
    * @returns A Promise that resolves to the Order if found, or null if not found

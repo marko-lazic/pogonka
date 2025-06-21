@@ -271,13 +271,40 @@ export class OrderController {
    */
   async renderOrdersPage(req: Request, res: Response): Promise<void> {
     try {
-      const orders = await this.orderService.getAllOrders();
+      // Get pagination parameters from query
+      const size = parseInt(req.query.size as string) || 5; // Default page size is 5
+      const page = parseInt(req.query.page as string) || 1; // Default page is 1
+      const offset = (page - 1) * size;
+
+      // Get paginated orders
+      const { orders, total } = await this.orderService.getOrdersWithPagination(size, offset);
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const orderDtos = OrderMapper.toDtoList(orders, baseUrl);
+
+      // Calculate pagination info
+      const totalPages = Math.ceil(total / size);
+      const hasNextPage = page < totalPages;
+      const hasPrevPage = page > 1;
+      const nextPage = page + 1;
+      const prevPage = page - 1;
+      const start = offset + 1;
+      const end = Math.min(offset + size, total);
 
       res.render('orders', { 
         title: 'Orders - Pogonka',
         orders: orderDtos,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          hasNextPage,
+          hasPrevPage,
+          nextPage,
+          prevPage,
+          size,
+          total,
+          start,
+          end
+        },
         breadcrumbs: [
           { label: 'Home', url: '/' },
           { label: 'Orders', url: '/orders' }
@@ -318,7 +345,7 @@ export class OrderController {
         breadcrumbs: [
           { label: 'Home', url: '/' },
           { label: 'Orders', url: '/orders' },
-          { label: `Order ${id.substring(0, 8)}...`, url: `/orders/${id}` }
+          { label: `${id}`, url: `/orders/${id}` }
         ]
       });
     } catch (error) {
