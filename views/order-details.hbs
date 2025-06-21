@@ -16,13 +16,13 @@
                 <div>
                     <p class="text-sm opacity-70">{{__ 'orders.status'}}</p>
                     <div class="badge 
-                        {{#if (eq order.status 'Created')}}badge-neutral{{/if}}
-                        {{#if (eq order.status 'Confirmed')}}badge-primary{{/if}}
-                        {{#if (eq order.status 'Canceled')}}badge-error{{/if}}
-                        {{#if (eq order.status 'Payment of Avans')}}badge-success{{/if}}
-                        {{#if (eq order.status 'Production and Packaging')}}badge-warning{{/if}}
-                        {{#if (eq order.status 'Delivery')}}badge-secondary{{/if}}
-                        {{#if (eq order.status 'Project Billing')}}badge-info{{/if}}">
+                        {{#if (eq order.status 'created')}}badge-neutral{{/if}}
+                        {{#if (eq order.status 'confirmed')}}badge-primary{{/if}}
+                        {{#if (eq order.status 'canceled')}}badge-error{{/if}}
+                        {{#if (eq order.status 'payment_of_avans')}}badge-success{{/if}}
+                        {{#if (eq order.status 'production_and_packaging')}}badge-warning{{/if}}
+                        {{#if (eq order.status 'delivery')}}badge-secondary{{/if}}
+                        {{#if (eq order.status 'project_billing')}}badge-info{{/if}}">
                         {{translateStatus order.status}}
                     </div>
                 </div>

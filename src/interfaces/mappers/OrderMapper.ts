@@ -2,6 +2,8 @@ import { Order } from '../../domain/model/Order';
 import { OrderDto } from '../dto/OrderDto';
 import { CustomerInfoDto } from '../dto/CustomerInfoDto';
 import { LinkDto } from '../dto/LinkDto';
+import { OrderStatus } from '../../domain/model/OrderStatus';
+import { OrderStatusMapper } from './OrderStatusMapper';
 
 /**
  * OrderMapper is responsible for mapping between Order domain entities and OrderDto DTOs.
@@ -35,7 +37,7 @@ export class OrderMapper {
 
     // Add status-specific links
     switch (order.status) {
-      case 'Created':
+      case OrderStatus.CREATED:
         links.push({
           rel: 'confirm',
           href: `${baseUrl}/orders/${order.id}/confirm`,
@@ -47,7 +49,7 @@ export class OrderMapper {
           method: 'POST'
         });
         break;
-      case 'Confirmed':
+      case OrderStatus.CONFIRMED:
         links.push({
           rel: 'pay',
           href: `${baseUrl}/orders/${order.id}/pay`,
@@ -59,7 +61,7 @@ export class OrderMapper {
           method: 'POST'
         });
         break;
-      case 'Payment of Avans':
+      case OrderStatus.PAYMENT_OF_AVANS:
         links.push({
           rel: 'start-production',
           href: `${baseUrl}/orders/${order.id}/start-production`,
@@ -71,7 +73,7 @@ export class OrderMapper {
           method: 'POST'
         });
         break;
-      case 'Production and Packaging':
+      case OrderStatus.PRODUCTION_AND_PACKAGING:
         links.push({
           rel: 'start-delivery',
           href: `${baseUrl}/orders/${order.id}/start-delivery`,
@@ -83,7 +85,7 @@ export class OrderMapper {
           method: 'POST'
         });
         break;
-      case 'Delivery':
+      case OrderStatus.DELIVERY:
         links.push({
           rel: 'complete-billing',
           href: `${baseUrl}/orders/${order.id}/complete-billing`,
@@ -95,7 +97,7 @@ export class OrderMapper {
     return {
       id: order.id,
       customerInfo: customerInfoDto,
-      status: order.status,
+      status: OrderStatusMapper.toViewOrderStatus(order.status),
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
       _links: links

@@ -86,8 +86,12 @@ const handlebars = create({
       const i18nFunc = options.data && options.data.root && options.data.root.__ ? 
         options.data.root.__ : i18n.__;
 
-      // Convert status to a key for translation
-      const statusKey = status.toLowerCase().replace(/ /g, '_');
+      // If the status is already in the correct format (no spaces, all lowercase),
+      // it's likely a ViewOrderStatus value and we can use it directly.
+      // Otherwise, convert it to the correct format.
+      const statusKey = status.includes(' ') ? 
+        status.toLowerCase().replace(/ /g, '_') : 
+        status;
 
       // Get the locale from the Handlebars context if available
       if (options.data && options.data.root && options.data.root.currentLocale) {

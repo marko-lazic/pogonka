@@ -1,6 +1,6 @@
 import { CustomerInfoDto } from './CustomerInfoDto';
 import { LinkDto } from './LinkDto';
-import { OrderStatus } from '../../domain/model/OrderStatus';
+import { ViewOrderStatus } from '../view/ViewOrderStatus';
 
 /**
  * OrderDto represents an order in API responses, including HATEOAS links.
@@ -17,9 +17,9 @@ export interface OrderDto {
   customerInfo: CustomerInfoDto;
 
   /**
-   * The status of the order
+   * The status of the order in the view/interface layer
    */
-  status: OrderStatus;
+  status: ViewOrderStatus;
 
   /**
    * The date and time when the order was created
