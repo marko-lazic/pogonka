@@ -4,11 +4,12 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{{#if title}}{{title}}{{else}}Pogonka{{/if}}</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/tailwind-generated.css">
 </head>
 <body class="font-sans m-0 p-5 leading-relaxed">
-<div class="max-w-4xl mx-auto p-5">
+<div class="max-w-4xl mx-auto p-5" hx-boost="true">
     {{{body}}}
 </div>
+<script src="/js/htmx.min.js"></script>
 </body>
 </html>
