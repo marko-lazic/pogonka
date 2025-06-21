@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{currentLocale}}" data-theme="light">
+<html lang="{{currentLocale}}" data-theme="light"><!-- Theme will be set by JavaScript based on user preference -->
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -92,11 +92,10 @@
         // Theme toggle functionality
         document.querySelector('.theme-controller').addEventListener('change', function() {
             const html = document.querySelector('html');
-            if (this.checked) {
-                html.setAttribute('data-theme', 'dark');
-            } else {
-                html.setAttribute('data-theme', 'light');
-            }
+            const theme = this.checked ? 'dark' : 'light';
+            html.setAttribute('data-theme', theme);
+            // Store theme preference in localStorage
+            localStorage.setItem('preferredTheme', theme);
         });
 
         // Language switching functionality
@@ -152,6 +151,16 @@
             if (storedLang && storedLang !== '{{currentLocale}}') {
                 // If stored language is different from current, set the language
                 setLanguage(storedLang);
+            }
+
+            // Apply stored theme preference on page load
+            const storedTheme = localStorage.getItem('preferredTheme');
+            if (storedTheme) {
+                const html = document.querySelector('html');
+                html.setAttribute('data-theme', storedTheme);
+                // Update the theme toggle checkbox to match the stored theme
+                const themeController = document.querySelector('.theme-controller');
+                themeController.checked = (storedTheme === 'dark');
             }
         });
     </script>
