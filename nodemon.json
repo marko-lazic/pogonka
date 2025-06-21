@@ -1,0 +1,7 @@
+{
+  "watch": ["dist", "views"],
+  "ext": "js,hbs",
+  "ignore": ["node_modules"],
+  "delay": "500ms",
+  "exec": "node dist/index.js"
+}
