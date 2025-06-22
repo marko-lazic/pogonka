@@ -53,6 +53,47 @@
                 </div>
             </div>
 
+            <div class="divider">{{__ 'orders.order_items'}}</div>
+
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>{{__ 'orders.product_id'}}</th>
+                            <th>{{__ 'orders.quantity'}}</th>
+                            <th>{{__ 'orders.price'}}</th>
+                            <th>{{__ 'orders.total'}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each order.items}}
+                            <tr>
+                                <td>{{this.productId}}</td>
+                                <td>{{this.quantity}}</td>
+                                <td>{{this.price.amount}} {{this.price.currency}}</td>
+                                <td>{{this.total.amount}} {{this.total.currency}}</td>
+                            </tr>
+                        {{else}}
+                            <tr>
+                                <td colspan="4" class="text-center">{{__ 'orders.no_items'}}</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right font-bold">{{__ 'orders.total_amount'}}:</td>
+                            <td class="font-bold">
+                                {{#if order.totalAmount}}
+                                    {{order.totalAmount.amount}} {{order.totalAmount.currency}}
+                                {{else}}
+                                    0.00 EUR
+                                {{/if}}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
             <div class="divider">{{__ 'common.actions'}}</div>
 
             <div class="flex flex-wrap gap-2">
@@ -71,6 +112,9 @@
                         {{/if}}
                     {{/if}}
                 {{/each}}
+                <a href="/orders/{{order.id}}/edit" class="btn btn-sm btn-secondary">
+                    {{__ 'common.edit'}}
+                </a>
                 <button 
                     class="btn btn-sm btn-error"
                     hx-delete="/orders/{{order.id}}"

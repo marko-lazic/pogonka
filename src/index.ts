@@ -11,6 +11,9 @@ import { PidGenerator } from "./infrastructure/util/PidGenerator";
 import i18n, { DEFAULT_LOCALE, AVAILABLE_LOCALES, LOCALE_FORMATS, LocaleType } from './config/i18n';
 import { NotificationController } from './interfaces/controllers/NotificationController';
 import { SessionController } from './interfaces/controllers/SessionController';
+import { ProductController } from './interfaces/controllers/ProductController';
+import { ProductService } from './application/service/ProductService';
+import { MockProductRepository } from './infrastructure/repository/MockProductRepository';
 
 const app = express();
 const port = process.env.PORT || 9876;
@@ -110,6 +113,11 @@ const handlebars = create({
       // Remove the last argument (Handlebars options)
       args.pop();
       return args.join('');
+    },
+
+    // Helper to convert an object to JSON string
+    json: function(obj: any) {
+      return JSON.stringify(obj);
     }
   }
 });
@@ -180,9 +188,12 @@ app.use((req, res, next) => {
 
 // Initialize repositories, services, and controllers
 const orderRepository = new MockOrderRepository();
+const productRepository = new MockProductRepository();
 const pidGenerateId = new PidGenerator();
 const orderService = new OrderService(orderRepository, pidGenerateId);
+const productService = new ProductService(productRepository, pidGenerateId);
 const orderController = new OrderController(orderService);
+const productController = new ProductController(productService);
 const notificationController = new NotificationController();
 const sessionController = new SessionController();
 
@@ -198,9 +209,11 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/orders', orderController.renderOrdersPage.bind(orderController));
 app.get('/orders/create', orderController.renderCreateOrderPage.bind(orderController));
 app.get('/orders/:id', orderController.renderOrderDetailsPage.bind(orderController));
+app.get('/orders/:id/edit', orderController.renderEditOrderPage.bind(orderController));
 
 // Order action routes
 app.post('/orders', orderController.createOrder.bind(orderController));
+app.post('/orders/:id/update', orderController.updateOrder.bind(orderController));
 app.delete('/orders/:id', orderController.deleteOrder.bind(orderController));
 
 // Order status transition routes
@@ -219,6 +232,9 @@ app.get('/notifications/alert', notificationController.renderNotificationAlert.b
 app.get('/session/language', sessionController.setLanguage.bind(sessionController));
 app.get('/session/theme', sessionController.setTheme.bind(sessionController));
 app.get('/logout', sessionController.logout.bind(sessionController));
+
+// Product routes
+app.get('/api/products/search', productController.searchProducts.bind(productController));
 
 // Start the server
 app.listen(port, () => {

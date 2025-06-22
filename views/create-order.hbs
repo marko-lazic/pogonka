@@ -5,10 +5,24 @@
     <!-- Create Order Card -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title text-2xl">{{__ 'orders.create_new_order'}}</h2>
+            <h2 class="card-title text-2xl">
+                {{#if isEdit}}
+                    {{__ 'orders.edit_order'}}
+                {{else}}
+                    {{__ 'orders.create_new_order'}}
+                {{/if}}
+            </h2>
             <div class="divider"></div>
 
-            <form id="create-order-form" method="POST" action="/orders" hx-post="/orders" hx-target="body" hx-swap="outerHTML">
+            <form id="create-order-form" method="POST" 
+                {{#if isEdit}}
+                    action="/orders/{{order.id}}/update" 
+                    hx-post="/orders/{{order.id}}/update"
+                {{else}}
+                    action="/orders" 
+                    hx-post="/orders"
+                {{/if}}
+                hx-target="body" hx-swap="outerHTML">
                 <div class="divider">{{__ 'orders.customer_information'}}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -16,35 +30,127 @@
                         <label class="label">
                             <span class="label-text">{{__ 'orders.customer_name'}}</span>
                         </label>
-                        <input type="text" name="customerName" placeholder="{{__ 'orders.enter_customer_name'}}" class="input input-bordered w-full" required />
+                        <input type="text" name="customerName" placeholder="{{__ 'orders.enter_customer_name'}}" class="input input-bordered w-full" required 
+                            {{#if isEdit}}value="{{order.customerInfo.name}}"{{/if}} />
                     </div>
 
                     <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">{{__ 'orders.customer_email'}}</span>
                         </label>
-                        <input type="email" name="email" placeholder="{{__ 'orders.enter_email'}}" class="input input-bordered w-full" required />
+                        <input type="email" name="email" placeholder="{{__ 'orders.enter_email'}}" class="input input-bordered w-full" required 
+                            {{#if isEdit}}value="{{order.customerInfo.email}}"{{/if}} />
                     </div>
 
                     <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">{{__ 'orders.customer_tax_number'}}</span>
                         </label>
-                        <input type="text" name="taxNumber" placeholder="{{__ 'orders.enter_tax_number'}}" class="input input-bordered w-full" required />
+                        <input type="text" name="taxNumber" placeholder="{{__ 'orders.enter_tax_number'}}" class="input input-bordered w-full" required 
+                            {{#if isEdit}}value="{{order.customerInfo.taxNumber}}"{{/if}} />
                     </div>
                 </div>
 
                 <div class="divider">{{__ 'orders.order_items'}}</div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- TODO order items here -->
+                <!-- Order Items List -->
+                <div id="order-items-container" class="mb-4">
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th>{{__ 'orders.product'}}</th>
+                                    <th>{{__ 'orders.quantity'}}</th>
+                                    <th>{{__ 'orders.price'}}</th>
+                                    <th>{{__ 'orders.total'}}</th>
+                                    <th>{{__ 'common.actions'}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-items-list">
+                                <!-- Order items will be added here dynamically -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-right font-bold">{{__ 'orders.total_amount'}}:</td>
+                                    <td id="order-total-amount" class="font-bold">0.00 EUR</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add New Item Form -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">{{__ 'orders.product'}}</span>
+                        </label>
+                        <div class="dropdown w-full">
+                            <input 
+                                type="text" 
+                                id="product-search" 
+                                placeholder="{{__ 'orders.search_product'}}" 
+                                class="input input-bordered w-full" 
+                                hx-get="/api/products/search" 
+                                hx-trigger="keyup changed delay:500ms" 
+                                hx-target="#product-search-results" 
+                                hx-params="q"
+                            />
+                            <input type="hidden" id="selected-product-id" name="productId" />
+                            <div id="product-search-results" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-60 overflow-y-auto hidden">
+                                <!-- Search results will appear here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">{{__ 'orders.quantity'}}</span>
+                        </label>
+                        <input type="number" id="item-quantity" min="1" value="1" class="input input-bordered w-full" />
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">{{__ 'orders.price'}}</span>
+                        </label>
+                        <div class="join">
+                            <input type="number" id="item-price" min="0" step="0.01" class="input input-bordered w-full join-item" />
+                            <select id="item-currency" class="select select-bordered join-item">
+                                <option value="EUR" selected>EUR</option>
+                                <option value="USD">USD</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mb-4">
+                    <button type="button" id="add-item-btn" class="btn btn-secondary">
+                        {{__ 'orders.add_item'}}
+                    </button>
                 </div>
 
                 <div class="divider"></div>
 
+                <!-- Hidden container for order items data that will be submitted -->
+                <div id="order-items-data" class="hidden"
+                    {{#if isEdit}}
+                    data-order-items='{{json order.items}}'
+                    {{/if}}>
+                    <!-- Order items data will be added here as hidden inputs -->
+                </div>
+
                 <div class="flex justify-end gap-2 mt-4">
-                    <a href="/orders" class="btn btn-ghost">{{__ 'common.cancel'}}</a>
-                    <button type="submit" class="btn btn-primary">{{__ 'orders.create_order'}}</button>
+                    <a href="{{#if isEdit}}/orders/{{order.id}}{{else}}/orders{{/if}}" class="btn btn-ghost">{{__ 'common.cancel'}}</a>
+                    <button type="submit" class="btn btn-primary">
+                        {{#if isEdit}}
+                            {{__ 'orders.update_order'}}
+                        {{else}}
+                            {{__ 'orders.create_order'}}
+                        {{/if}}
+                    </button>
                 </div>
             </form>
         </div>

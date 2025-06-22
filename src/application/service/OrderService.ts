@@ -2,7 +2,11 @@ import { Order } from '../../domain/model/Order';
 import { OrderRepository } from '../../domain/repository/OrderRepository';
 import { CustomerInfo } from '../../domain/model/CustomerInfo';
 import { OrderStatus } from '../../domain/model/OrderStatus';
-import {GenerateId} from "../../domain/util/GenerateId";
+import { GenerateId } from "../../domain/util/GenerateId";
+import { ProductId } from '../../domain/model/ProductId';
+import { Money } from '../../domain/model/Money';
+import { OrderItem } from '../../domain/model/OrderItem';
+import { OrderItemId } from '../../domain/model/OrderItemId';
 
 /**
  * OrderService is an application service that handles operations related to orders.
@@ -169,5 +173,91 @@ export class OrderService {
    */
   async deleteOrder(id: string): Promise<boolean> {
     return this.orderRepository.delete(id);
+  }
+
+  /**
+   * Add an item to an order
+   * @param orderId The ID of the order
+   * @param productId The ID of the product
+   * @param quantity The quantity of the product
+   * @param price The price of the product
+   * @param currency The currency of the price
+   * @returns A Promise that resolves to the updated Order if found, or null if not found
+   */
+  async addOrderItem(orderId: string, productId: string, quantity: number, price: number, currency: string = 'EUR'): Promise<Order | null> {
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) {
+      return null;
+    }
+
+    const productIdObj = new ProductId(productId);
+    const priceObj = new Money(price, currency);
+
+    order.addItem(productIdObj, quantity, priceObj);
+    return this.orderRepository.save(order);
+  }
+
+  /**
+   * Remove an item from an order
+   * @param orderId The ID of the order
+   * @param orderItemId The ID of the order item to remove
+   * @returns A Promise that resolves to the updated Order if found and item removed, or null if not found or item not removed
+   */
+  async removeOrderItem(orderId: string, orderItemId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) {
+      return null;
+    }
+
+    const orderItemIdObj = new OrderItemId(orderItemId);
+    const removed = order.removeItem(orderItemIdObj);
+
+    if (!removed) {
+      return null;
+    }
+
+    return this.orderRepository.save(order);
+  }
+
+  /**
+   * Recalculate the total amount of an order
+   * @param orderId The ID of the order
+   * @returns A Promise that resolves to the updated Order if found, or null if not found
+   */
+  async recalculateOrderTotal(orderId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) {
+      return null;
+    }
+
+    order.recalculateTotal();
+    return this.orderRepository.save(order);
+  }
+
+  /**
+   * Update an order with new customer information
+   * @param id The ID of the order to update
+   * @param customerName The new name of the customer
+   * @param taxNumber The new tax/VAT number of the customer
+   * @param email The new email of the customer
+   * @returns A Promise that resolves to the updated Order if found, or null if not found
+   */
+  async updateOrder(id: string, customerName: string, taxNumber: string, email: string): Promise<Order | null> {
+    const order = await this.orderRepository.findById(id);
+    if (!order) {
+      return null;
+    }
+
+    // Create a new order with the same ID, updated customer info, and same status
+    const customerInfo = new CustomerInfo(customerName, taxNumber, email);
+    const updatedOrder = new Order(id, customerInfo, order.status);
+
+    // Copy the items from the original order
+    for (const item of order.items) {
+      updatedOrder.addItem(item.productId, item.quantity, item.price);
+    }
+
+    // Save the updated order
+    return this.orderRepository.save(updatedOrder);
   }
 }

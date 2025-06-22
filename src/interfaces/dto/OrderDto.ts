@@ -1,6 +1,7 @@
 import { CustomerInfoDto } from './CustomerInfoDto';
 import { LinkDto } from './LinkDto';
 import { ViewOrderStatus } from '../view/ViewOrderStatus';
+import { OrderItemDto } from './OrderItemDto';
 
 /**
  * OrderDto represents an order in API responses, including HATEOAS links.
@@ -30,6 +31,19 @@ export interface OrderDto {
    * The date and time when the order was last updated
    */
   updatedAt: string;
+
+  /**
+   * The items in the order
+   */
+  items: OrderItemDto[];
+
+  /**
+   * The total amount of the order
+   */
+  totalAmount: {
+    amount: number;
+    currency: string;
+  };
 
   /**
    * HATEOAS links related to the order

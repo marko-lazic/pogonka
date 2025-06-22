@@ -3,6 +3,8 @@ import { OrderService } from '../../application/service/OrderService';
 import { OrderMapper } from '../mappers/OrderMapper';
 import { NotificationService } from '../../application/service/NotificationService';
 import { SessionService } from '../../application/service/SessionService';
+import { CustomerInfo } from '../../domain/model/CustomerInfo';
+import { Order } from '../../domain/model/Order';
 
 /**
  * OrderController handles HTTP requests related to orders.
@@ -23,7 +25,7 @@ export class OrderController {
    */
   async createOrder(req: Request, res: Response): Promise<void> {
     try {
-      const { customerName, taxNumber, email } = req.body;
+      const { customerName, taxNumber, email, items } = req.body;
 
       if (!customerName || !taxNumber || !email) {
         res.status(400).render('error', {
@@ -33,7 +35,23 @@ export class OrderController {
         return;
       }
 
+      // Create the order
       const order = await this.orderService.createOrder(customerName, taxNumber, email);
+
+      // Add order items if they exist
+      if (items && Array.isArray(items)) {
+        for (const item of items) {
+          if (item.productId && item.quantity && item.price) {
+            await this.orderService.addOrderItem(
+              order.id,
+              item.productId,
+              parseInt(item.quantity),
+              parseFloat(item.price),
+              item.currency || 'EUR'
+            );
+          }
+        }
+      }
 
       // Get the user ID from the session
       const userId = this.sessionService.getUserId(req);
@@ -47,6 +65,82 @@ export class OrderController {
       res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_create_order')
+      });
+    }
+  }
+
+  /**
+   * Update an existing order
+   * @param req The HTTP request
+   * @param res The HTTP response
+   */
+  async updateOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { customerName, taxNumber, email, items } = req.body;
+
+      if (!customerName || !taxNumber || !email) {
+        res.status(400).render('error', {
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.missing_required_fields')
+        });
+        return;
+      }
+
+      // Get the existing order
+      const existingOrder = await this.orderService.getOrderById(id);
+      if (!existingOrder) {
+        res.status(404).render('error', {
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
+        });
+        return;
+      }
+
+      // Update the order with new customer information
+      const updatedOrder = await this.orderService.updateOrder(id, customerName, taxNumber, email);
+
+      if (!updatedOrder) {
+        res.status(500).render('error', {
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.failed_to_update_order')
+        });
+        return;
+      }
+
+      // Remove all existing items
+      for (const item of updatedOrder.items) {
+        await this.orderService.removeOrderItem(updatedOrder.id, item.id.value);
+      }
+
+      // Remove all existing items and add new ones
+      if (items && Array.isArray(items)) {
+        for (const item of items) {
+          if (item.productId && item.quantity && item.price) {
+            await this.orderService.addOrderItem(
+              updatedOrder.id,
+              item.productId,
+              parseInt(item.quantity),
+              parseFloat(item.price),
+              item.currency || 'EUR'
+            );
+          }
+        }
+      }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
+
+      // Redirect to the order details page
+      req.params.id = updatedOrder.id;
+      return this.renderOrderDetailsPage(req, res);
+    } catch (error) {
+      res.status(500).render('error', {
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: error instanceof Error ? error.message : res.__('orders.failed_to_update_order')
       });
     }
   }
@@ -530,10 +624,51 @@ export class OrderController {
     try {
       res.render('create-order', {
         title: `${res.__('orders.create_new_order')} - ${res.__('app.name')}`,
+        isEdit: false,
         breadcrumbs: [
           { label: res.__('common.home'), url: '/' },
           { label: res.__('orders.title'), url: '/orders' },
           { label: res.__('orders.create_new_order'), url: '/orders/create' }
+        ]
+      });
+    } catch (error) {
+      res.status(500).render('error', {
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('orders.failed_to_retrieve_orders')
+      });
+    }
+  }
+
+  /**
+   * Render the edit order page
+   * @param req The HTTP request
+   * @param res The HTTP response
+   */
+  async renderEditOrderPage(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const order = await this.orderService.getOrderById(id);
+
+      if (!order) {
+        res.status(404).render('error', {
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('orders.order_not_found')
+        });
+        return;
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const orderDto = OrderMapper.toDto(order, baseUrl);
+
+      res.render('create-order', {
+        title: `${res.__('orders.edit_order')} - ${res.__('app.name')}`,
+        isEdit: true,
+        order: orderDto,
+        breadcrumbs: [
+          { label: res.__('common.home'), url: '/' },
+          { label: res.__('orders.title'), url: '/orders' },
+          { label: `${id}`, url: `/orders/${id}` },
+          { label: res.__('orders.edit_order'), url: `/orders/${id}/edit` }
         ]
       });
     } catch (error) {

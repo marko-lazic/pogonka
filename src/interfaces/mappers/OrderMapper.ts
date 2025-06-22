@@ -4,6 +4,7 @@ import { CustomerInfoDto } from '../dto/CustomerInfoDto';
 import { LinkDto } from '../dto/LinkDto';
 import { OrderStatus } from '../../domain/model/OrderStatus';
 import { OrderStatusMapper } from './OrderStatusMapper';
+import { OrderItemDto } from '../dto/OrderItemDto';
 
 /**
  * OrderMapper is responsible for mapping between Order domain entities and OrderDto DTOs.
@@ -94,12 +95,32 @@ export class OrderMapper {
         break;
     }
 
+    // Map order items
+    const orderItemsDto: OrderItemDto[] = order.items.map(item => ({
+      id: item.id.value,
+      productId: item.productId.value,
+      quantity: item.quantity,
+      price: {
+        amount: item.price.amount,
+        currency: item.price.currency
+      },
+      total: {
+        amount: item.calculateTotal().amount,
+        currency: item.calculateTotal().currency
+      }
+    }));
+
     return {
       id: order.id,
       customerInfo: customerInfoDto,
       status: OrderStatusMapper.toViewOrderStatus(order.status),
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
+      items: orderItemsDto,
+      totalAmount: {
+        amount: order.totalAmount.amount,
+        currency: order.totalAmount.currency
+      },
       _links: links
     };
   }

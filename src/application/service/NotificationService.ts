@@ -52,7 +52,7 @@ export class NotificationService {
    * Send a notification about order changes to all clients except the originator
    * @param excludeUserId - User ID to exclude from notification (usually the user who made the change)
    */
-  public notifyOrderChange( excludeUserId: string): void {
+  public notifyOrderChange(excludeUserId: string): void {
     // Ensure excludeUserId is not empty or undefined
     if (!excludeUserId) {
       return;
@@ -63,6 +63,25 @@ export class NotificationService {
       // Make sure both userIds are defined and do a strict comparison
       if (userId && excludeUserId && userId !== excludeUserId) {
         response.write(`data: {"type":"order-change"}\n\n`);
+      }
+    });
+  }
+
+  /**
+   * Send a notification about product changes to all clients except the originator
+   * @param excludeUserId - User ID to exclude from notification (usually the user who made the change)
+   */
+  public notifyProductChange(excludeUserId: string): void {
+    // Ensure excludeUserId is not empty or undefined
+    if (!excludeUserId) {
+      return;
+    }
+
+    this.clients.forEach(({ response, userId }, clientId) => {
+      // Don't send notification to the user who made the change
+      // Make sure both userIds are defined and do a strict comparison
+      if (userId && excludeUserId && userId !== excludeUserId) {
+        response.write(`data: {"type":"product-change"}\n\n`);
       }
     });
   }
