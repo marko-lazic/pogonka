@@ -2,11 +2,15 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { create } from 'express-handlebars';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import { v4 as uuidv4 } from 'uuid';
 import { OrderController } from './interfaces/controllers/OrderController';
 import { OrderService } from './application/service/OrderService';
 import { MockOrderRepository } from './infrastructure/repository/MockOrderRepository';
 import { PidGenerator } from "./infrastructure/util/PidGenerator";
 import i18n, { DEFAULT_LOCALE, AVAILABLE_LOCALES, LOCALE_FORMATS, LocaleType } from './config/i18n';
+import { NotificationController } from './interfaces/controllers/NotificationController';
+import { SessionController } from './interfaces/controllers/SessionController';
 
 const app = express();
 const port = process.env.PORT || 9876;
@@ -120,6 +124,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Set up session middleware
+app.use(session({
+  secret: 'pogonka-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 }, // 24 hours
+  genid: () => uuidv4()
+}));
+
 // Custom middleware to set language from header or cookie before i18n initialization
 app.use((req, res, next) => {
   // Check for language in X-Language header (set by our JavaScript)
@@ -153,11 +166,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Initialize session for each request
+app.use((req, res, next) => {
+  // Initialize the session
+  const sessionController = new SessionController();
+  sessionController.initSession(req, res);
+
+  // Make session data available to templates
+  res.locals.session = req.session;
+
+  next();
+});
+
 // Initialize repositories, services, and controllers
 const orderRepository = new MockOrderRepository();
 const pidGenerateId = new PidGenerator();
 const orderService = new OrderService(orderRepository, pidGenerateId);
 const orderController = new OrderController(orderService);
+const notificationController = new NotificationController();
+const sessionController = new SessionController();
 
 // Routes
 app.get('/', (req: Request, res: Response) => {
@@ -183,6 +210,15 @@ app.post('/orders/:id/pay', orderController.markOrderAsPaid.bind(orderController
 app.post('/orders/:id/start-production', orderController.startOrderProduction.bind(orderController));
 app.post('/orders/:id/start-delivery', orderController.startOrderDelivery.bind(orderController));
 app.post('/orders/:id/complete-billing', orderController.completeOrderBilling.bind(orderController));
+
+// Notification routes
+app.get('/notifications/events', notificationController.subscribeToEvents.bind(notificationController));
+app.get('/notifications/alert', notificationController.renderNotificationAlert.bind(notificationController));
+
+// Session routes
+app.get('/session/language', sessionController.setLanguage.bind(sessionController));
+app.get('/session/theme', sessionController.setTheme.bind(sessionController));
+app.get('/logout', sessionController.logout.bind(sessionController));
 
 // Start the server
 app.listen(port, () => {

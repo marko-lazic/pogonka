@@ -18,7 +18,8 @@
     "home": "Home",
     "error": "Error",
     "cancel": "Cancel",
-    "back_to_home": "Back to Home"
+    "back_to_home": "Back to Home",
+    "logout": "Logout"
   },
   "orders": {
     "title": "Orders",
@@ -77,5 +78,11 @@
     "start-production": "Start Production",
     "start-delivery": "Start Delivery",
     "complete-billing": "Complete Billing"
+  },
+  "notifications": {
+    "new_order_created": "New order created by {{customer}}. Tap to see.",
+    "order_status_updated": "Order {{id}} status updated to {{status}}. Tap to see.",
+    "order_deleted": "Order {{id}} has been deleted. Tap to see.",
+    "state_changed": "The state has changed. Tap to see."
   }
 }

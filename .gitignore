@@ -16,6 +16,8 @@ package-lock.json
 # Generated JavaScript files
 public/js/htmx.min.js
 public/js/htmx.min.js.map
+public/js/htmx-ext-sse.min.js
+public/js/htmx-ext-sse.min.js.map
 
 # Generated CSS files
 public/css/output.css

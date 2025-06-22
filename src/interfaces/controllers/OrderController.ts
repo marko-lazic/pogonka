@@ -1,13 +1,20 @@
 import { Request, Response } from 'express';
 import { OrderService } from '../../application/service/OrderService';
 import { OrderMapper } from '../mappers/OrderMapper';
-import { OrderStatus } from '../../domain/model/OrderStatus';
+import { NotificationService } from '../../application/service/NotificationService';
+import { SessionService } from '../../application/service/SessionService';
 
 /**
  * OrderController handles HTTP requests related to orders.
  */
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  private notificationService: NotificationService;
+  private sessionService: SessionService;
+
+  constructor(private readonly orderService: OrderService) {
+    this.notificationService = NotificationService.getInstance();
+    this.sessionService = SessionService.getInstance();
+  }
 
   /**
    * Create a new order
@@ -19,7 +26,7 @@ export class OrderController {
       const { customerName, taxNumber, email } = req.body;
 
       if (!customerName || !taxNumber || !email) {
-        res.status(400).render('error', { 
+        res.status(400).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.missing_required_fields')
         });
@@ -28,10 +35,16 @@ export class OrderController {
 
       const order = await this.orderService.createOrder(customerName, taxNumber, email);
 
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
+
       // Redirect to the orders page
       return this.renderOrdersPage(req, res);
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_create_order')
       });
@@ -49,12 +62,18 @@ export class OrderController {
       const order = await this.orderService.confirmOrder(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -74,7 +93,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_confirm_order')
       });
@@ -92,12 +111,18 @@ export class OrderController {
       const order = await this.orderService.cancelOrder(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -117,7 +142,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_cancel_order')
       });
@@ -135,12 +160,18 @@ export class OrderController {
       const order = await this.orderService.markOrderAsPaid(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -160,7 +191,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_mark_as_paid')
       });
@@ -178,12 +209,18 @@ export class OrderController {
       const order = await this.orderService.startOrderProduction(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -203,7 +240,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_start_production')
       });
@@ -221,12 +258,18 @@ export class OrderController {
       const order = await this.orderService.startOrderDelivery(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -246,7 +289,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_start_delivery')
       });
@@ -264,12 +307,18 @@ export class OrderController {
       const order = await this.orderService.completeOrderBilling(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // If the request came from the details page, render the details page
       if (req.headers['hx-current-url']?.toString().includes(`/orders/${id}`)) {
@@ -289,7 +338,7 @@ export class OrderController {
         return this.renderOrdersPage(req, res);
       }
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: error instanceof Error ? error.message : res.__('orders.failed_to_complete_billing')
       });
@@ -304,15 +353,25 @@ export class OrderController {
   async deleteOrder(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      // Get the order ID before deleting it
+      const orderId = id;
+
       const deleted = await this.orderService.deleteOrder(id);
 
       if (!deleted) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
         return;
       }
+
+      // Get the user ID from the session
+      const userId = this.sessionService.getUserId(req);
+
+      // Send notification to other users
+      this.notificationService.notifyOrderChange(userId);
 
       // Copy pagination parameters from body to query if they exist
       if (req.body.page) {
@@ -328,7 +387,7 @@ export class OrderController {
       // Always redirect to the orders page after delete
       return this.renderOrdersPage(req, res);
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: res.__('orders.failed_to_delete_order')
       });
@@ -395,7 +454,7 @@ export class OrderController {
       }
 
       // Otherwise render the full page
-      res.render('orders', { 
+      res.render('orders', {
         title: `${res.__('orders.title')} - ${res.__('app.name')}`,
         orders: orderDtos,
         searchQuery: query, // Pass the search query to the view
@@ -417,7 +476,7 @@ export class OrderController {
         ]
       });
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: res.__('orders.failed_to_retrieve_orders')
       });
@@ -435,7 +494,7 @@ export class OrderController {
       const order = await this.orderService.getOrderById(id);
 
       if (!order) {
-        res.status(404).render('error', { 
+        res.status(404).render('error', {
           title: `${res.__('common.error')} - ${res.__('app.name')}`,
           message: res.__('orders.order_not_found')
         });
@@ -445,7 +504,7 @@ export class OrderController {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const orderDto = OrderMapper.toDto(order, baseUrl);
 
-      res.render('order-details', { 
+      res.render('order-details', {
         title: `${res.__('orders.order_details')} ${id} - ${res.__('app.name')}`,
         order: orderDto,
         breadcrumbs: [
@@ -455,7 +514,7 @@ export class OrderController {
         ]
       });
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: res.__('orders.failed_to_retrieve_orders')
       });
@@ -469,7 +528,7 @@ export class OrderController {
    */
   async renderCreateOrderPage(req: Request, res: Response): Promise<void> {
     try {
-      res.render('create-order', { 
+      res.render('create-order', {
         title: `${res.__('orders.create_new_order')} - ${res.__('app.name')}`,
         breadcrumbs: [
           { label: res.__('common.home'), url: '/' },
@@ -478,7 +537,7 @@ export class OrderController {
         ]
       });
     } catch (error) {
-      res.status(500).render('error', { 
+      res.status(500).render('error', {
         title: `${res.__('common.error')} - ${res.__('app.name')}`,
         message: res.__('orders.failed_to_retrieve_orders')
       });

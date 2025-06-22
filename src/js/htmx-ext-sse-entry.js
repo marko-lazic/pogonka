@@ -1,0 +1,1 @@
+import 'htmx-ext-sse';
