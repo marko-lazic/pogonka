@@ -265,10 +265,51 @@ export class ProductController {
     try {
       res.render('create-product', {
         title: `${res.__('products.create_new_product')} - ${res.__('app.name')}`,
+        isEdit: false,
         breadcrumbs: [
           { label: res.__('common.home'), url: '/' },
           { label: res.__('products.title'), url: '/products' },
           { label: res.__('products.create_new_product'), url: '/products/create' }
+        ]
+      });
+    } catch (error) {
+      res.status(500).render('error', {
+        title: `${res.__('common.error')} - ${res.__('app.name')}`,
+        message: res.__('products.failed_to_retrieve_products')
+      });
+    }
+  }
+
+  /**
+   * Render the edit product page
+   * @param req The HTTP request
+   * @param res The HTTP response
+   */
+  async renderEditProductPage(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const product = await this.productService.getProductById(id);
+
+      if (!product) {
+        res.status(404).render('error', {
+          title: `${res.__('common.error')} - ${res.__('app.name')}`,
+          message: res.__('products.product_not_found')
+        });
+        return;
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const productDto = ProductMapper.toDto(product, baseUrl);
+
+      res.render('create-product', {
+        title: `${res.__('products.edit_product')} - ${res.__('app.name')}`,
+        isEdit: true,
+        product: productDto,
+        breadcrumbs: [
+          { label: res.__('common.home'), url: '/' },
+          { label: res.__('products.title'), url: '/products' },
+          { label: `${id}`, url: `/products/${id}` },
+          { label: res.__('products.edit_product'), url: `/products/${id}/edit` }
         ]
       });
     } catch (error) {

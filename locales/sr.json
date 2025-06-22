@@ -60,7 +60,9 @@
     "enter_tax_number": "Unesite PIB/PDV broj",
     "order_items": "Stavke porudžbine",
     "create_order": "Kreiraj porudžbinu",
-    "vat": "PIB"
+    "vat": "PIB",
+    "loading_product": "Učitavanje proizvoda",
+    "product_id": "ID proizvoda"
   },
   "status": {
     "created": "Kreirana",
@@ -83,6 +85,38 @@
     "new_order_created": "Nova porudžbina kreirana od {{customer}}. Kliknite da vidite.",
     "order_status_updated": "Status porudžbine {{id}} promenjen na {{status}}. Kliknite da vidite.",
     "order_deleted": "Porudžbina {{id}} je obrisana. Kliknite da vidite.",
-    "state_changed": "Stanje je promenjeno. Kliknite da vidite."
+    "state_changed": "Stanje je promenjeno. Kliknite da vidite.",
+    "product_changed": "Informacije o proizvodu su promenjene. Kliknite da vidite."
+  },
+  "products": {
+    "title": "Proizvodi",
+    "manage_products": "Upravljajte proizvodima u Pogonki!",
+    "search_placeholder": "Pretraži proizvode...",
+    "create_new_product": "Kreiraj novi proizvod",
+    "product_list": "Lista proizvoda",
+    "id": "ID",
+    "name": "Naziv",
+    "price": "Cena",
+    "product_details": "Detalji proizvoda",
+    "product_information": "Informacije o proizvodu",
+    "enter_name": "Unesite naziv proizvoda",
+    "enter_price": "Unesite cenu",
+    "create_product": "Kreiraj proizvod",
+    "update_product": "Ažuriraj proizvod",
+    "edit_product": "Izmeni proizvod",
+    "delete_confirmation": "Da li ste sigurni da želite da obrišete ovaj proizvod?",
+    "no_products_found": "Nema pronađenih proizvoda. Kreirajte svoj prvi proizvod koristeći dugme iznad!",
+    "back_to_products": "Nazad na proizvode",
+    "showing_products": "Prikazuje se {{start}} do {{end}} od {{total}} proizvoda",
+    "product_not_found": "Proizvod nije pronađen",
+    "failed_to_retrieve_products": "Neuspešno preuzimanje proizvoda",
+    "failed_to_create_product": "Neuspešno kreiranje proizvoda",
+    "failed_to_update_product": "Neuspešno ažuriranje proizvoda",
+    "failed_to_delete_product": "Neuspešno brisanje proizvoda",
+    "failed_to_search_products": "Neuspešna pretraga proizvoda",
+    "missing_required_fields": "Nedostaju obavezna polja",
+    "product": "Proizvod",
+    "quantity": "Količina",
+    "search_product": "Pretraži proizvod"
   }
 }

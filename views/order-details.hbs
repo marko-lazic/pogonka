@@ -1,5 +1,7 @@
 <!-- Order Details -->
 <div class="flex flex-col gap-4">
+    <!-- Include order-details.js -->
+    <script src="/js/order-details.js"></script>
     <!-- Breadcrumbs are handled by the layout -->
 
     <!-- Order Details Card -->
@@ -59,7 +61,7 @@
                 <table class="table w-full">
                     <thead>
                         <tr>
-                            <th>{{__ 'orders.product_id'}}</th>
+                            <th>{{__ 'orders.product'}}</th>
                             <th>{{__ 'orders.quantity'}}</th>
                             <th>{{__ 'orders.price'}}</th>
                             <th>{{__ 'orders.total'}}</th>
@@ -67,8 +69,16 @@
                     </thead>
                     <tbody>
                         {{#each order.items}}
-                            <tr>
-                                <td>{{this.productId}}</td>
+                            <tr class="order-item" data-product-id="{{this.productId}}">
+                                <td>
+                                    {{#if this.productName}}
+                                        <div class="font-medium product-name">{{this.productName}}</div>
+                                        <div class="text-xs opacity-70">{{__ 'orders.product_id'}}: {{this.productId}}</div>
+                                    {{else}}
+                                        <div class="font-medium product-name">{{__ 'orders.loading_product'}}...</div>
+                                        <div class="text-xs opacity-70">{{__ 'orders.product_id'}}: {{this.productId}}</div>
+                                    {{/if}}
+                                </td>
                                 <td>{{this.quantity}}</td>
                                 <td>{{this.price.amount}} {{this.price.currency}}</td>
                                 <td>{{this.total.amount}} {{this.total.currency}}</td>

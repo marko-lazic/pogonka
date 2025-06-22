@@ -1,0 +1,44 @@
+<!-- Product Details -->
+<div class="flex flex-col gap-4">
+    <!-- Breadcrumbs are handled by the layout -->
+
+    <!-- Product Details Card -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl">{{__ 'products.product_details'}}</h2>
+            <div class="divider"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm opacity-70">{{__ 'products.id'}}</p>
+                    <p class="font-semibold">{{product.id}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">{{__ 'products.name'}}</p>
+                    <p class="font-semibold">{{product.name}}</p>
+                </div>
+                <div>
+                    <p class="text-sm opacity-70">{{__ 'products.price'}}</p>
+                    <p class="font-semibold">{{product.price.amount}} {{product.price.currency}}</p>
+                </div>
+            </div>
+
+            <div class="divider">{{__ 'common.actions'}}</div>
+
+            <div class="flex flex-wrap gap-2">
+                <a href="/products/{{product.id}}/edit" class="btn btn-sm btn-secondary">
+                    {{__ 'common.edit'}}
+                </a>
+                <button 
+                    class="btn btn-sm btn-error"
+                    hx-delete="/products/{{product.id}}"
+                    hx-confirm="{{__ 'products.delete_confirmation'}}"
+                    hx-target="body"
+                    hx-swap="outerHTML">
+                    {{__ 'common.delete'}}
+                </button>
+                <a href="/products" class="btn btn-sm btn-ghost">{{__ 'products.back_to_products'}}</a>
+            </div>
+        </div>
+    </div>
+</div>

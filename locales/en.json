@@ -60,7 +60,9 @@
     "enter_tax_number": "Enter tax/VAT number",
     "order_items": "Order Items",
     "create_order": "Create Order",
-    "vat": "VAT"
+    "vat": "VAT",
+    "loading_product": "Loading product",
+    "product_id": "Product ID"
   },
   "status": {
     "created": "Created",
@@ -83,6 +85,38 @@
     "new_order_created": "New order created by {{customer}}. Tap to see.",
     "order_status_updated": "Order {{id}} status updated to {{status}}. Tap to see.",
     "order_deleted": "Order {{id}} has been deleted. Tap to see.",
-    "state_changed": "The state has changed. Tap to see."
+    "state_changed": "The state has changed. Tap to see.",
+    "product_changed": "Product information has changed. Tap to see."
+  },
+  "products": {
+    "title": "Products",
+    "manage_products": "Manage your products in Pogonka!",
+    "search_placeholder": "Search products...",
+    "create_new_product": "Create New Product",
+    "product_list": "Product List",
+    "id": "ID",
+    "name": "Name",
+    "price": "Price",
+    "product_details": "Product Details",
+    "product_information": "Product Information",
+    "enter_name": "Enter product name",
+    "enter_price": "Enter price",
+    "create_product": "Create Product",
+    "update_product": "Update Product",
+    "edit_product": "Edit Product",
+    "delete_confirmation": "Are you sure you want to delete this product?",
+    "no_products_found": "No products found. Create your first product using the button above!",
+    "back_to_products": "Back to Products",
+    "showing_products": "Showing {{start}} to {{end}} of {{total}} products",
+    "product_not_found": "Product not found",
+    "failed_to_retrieve_products": "Failed to retrieve products",
+    "failed_to_create_product": "Failed to create product",
+    "failed_to_update_product": "Failed to update product",
+    "failed_to_delete_product": "Failed to delete product",
+    "failed_to_search_products": "Failed to search products",
+    "missing_required_fields": "Missing required fields",
+    "product": "Product",
+    "quantity": "Quantity",
+    "search_product": "Search product"
   }
 }

@@ -234,6 +234,17 @@ app.get('/session/theme', sessionController.setTheme.bind(sessionController));
 app.get('/logout', sessionController.logout.bind(sessionController));
 
 // Product routes
+app.get('/products', productController.renderProductsPage.bind(productController));
+app.get('/products/create', productController.renderCreateProductPage.bind(productController));
+app.get('/products/:id', productController.renderProductDetailsPage.bind(productController));
+app.get('/products/:id/edit', productController.renderEditProductPage.bind(productController));
+
+// Product action routes
+app.post('/products', productController.createProduct.bind(productController));
+app.post('/products/:id/update', productController.updateProduct.bind(productController));
+app.delete('/products/:id', productController.deleteProduct.bind(productController));
+
+// Product API routes
 app.get('/api/products/search', productController.searchProducts.bind(productController));
 
 // Start the server

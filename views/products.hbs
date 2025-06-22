@@ -1,0 +1,57 @@
+<div class="flex flex-col gap-6">
+    <h1 class="text-3xl font-bold mb-2">{{__ 'products.title'}}</h1>
+    <p class="text-base-content opacity-70 mb-4">{{__ 'products.manage_products'}}</p>
+
+    <!-- Keyboard shortcut script -->
+    <script>
+        document.addEventListener('keydown', function(e) {
+            // Check for Cmd+K on Mac or Ctrl+K on Windows/Linux
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault(); // Prevent default browser behavior
+                document.getElementById('product-search').focus();
+            }
+        });
+    </script>
+
+    <!-- Search and Create New Product Button -->
+    <div class="flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
+        <div class="relative sm:w-1/2 md:w-2/5 lg:w-1/3">
+            <label class="input flex items-center w-full">
+                <kbd class="kbd kbd-sm">⌘</kbd>
+                <kbd class="kbd kbd-sm">K</kbd>
+                <div id="search-spinner" class="htmx-indicator">
+                    <span class="loading loading-spinner loading-sm"></span>
+                </div>
+                <input 
+                    type="search" 
+                    id="product-search"
+                    name="q" 
+                    placeholder="{{__ 'products.search_placeholder'}}"
+                    value="{{searchQuery}}"
+                    class="grow"
+                    hx-get="/products" 
+                    hx-trigger="input changed delay:300ms, search, keyup[key=='Enter']"
+                    hx-target="#product-table-container" 
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                    hx-include="[name='page'], [name='size']"
+                    hx-indicator="#search-spinner"
+                    autocomplete="off"
+                >
+            </label>
+        </div>
+
+        <a href="/products/create" class="btn btn-primary">
+            {{__ 'products.create_new_product'}}
+        </a>
+    </div>
+
+    <!-- Product List -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">{{__ 'products.product_list'}}</h2>
+
+            {{> product-table-container}}
+        </div>
+    </div>
+</div>
