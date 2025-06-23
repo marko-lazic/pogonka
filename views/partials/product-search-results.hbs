@@ -1,0 +1,9 @@
+{{#if products.length}}
+  {{#each products}}
+    <div class="dropdown-item" data-product-id="{{id}}" data-product-price="{{price.amount}}" data-product-currency="{{price.currency}}">
+      {{name}}
+    </div>
+  {{/each}}
+{{else}}
+  <div class="no-results">{{__ 'products.no_products_found'}}</div>
+{{/if}}

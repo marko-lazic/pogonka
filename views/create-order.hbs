@@ -22,7 +22,7 @@
                     action="/orders" 
                     hx-post="/orders"
                 {{/if}}
-                hx-target="body" hx-swap="outerHTML">
+                hx-target="body" hx-swap="outerHTML" hx-include="#order-items-data">
                 <div class="divider">{{__ 'orders.customer_information'}}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,22 +88,14 @@
                         <label class="label">
                             <span class="label-text">{{__ 'orders.product'}}</span>
                         </label>
-                        <div class="dropdown w-full">
-                            <input 
-                                type="text" 
-                                id="product-search" 
-                                placeholder="{{__ 'orders.search_product'}}" 
-                                class="input input-bordered w-full" 
-                                hx-get="/api/products/search" 
-                                hx-trigger="keyup changed delay:500ms" 
-                                hx-target="#product-search-results" 
-                                hx-params="q"
-                            />
-                            <input type="hidden" id="selected-product-id" name="productId" />
-                            <div id="product-search-results" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-60 overflow-y-auto hidden">
-                                <!-- Search results will appear here -->
-                            </div>
-                        </div>
+                        <select 
+                            id="product-search" 
+                            placeholder="{{__ 'orders.search_product'}}"
+                            autocomplete="off"
+                        >
+                            <option value="">{{__ 'orders.search_product'}}...</option>
+                        </select>
+                        <input type="hidden" id="selected-product-id" name="productId" />
                     </div>
 
                     <div class="form-control w-full md:col-span-2">
@@ -158,3 +150,5 @@
         </div>
     </div>
 </div>
+
+<script src="/js/order-items.js"></script>

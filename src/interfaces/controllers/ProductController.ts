@@ -335,11 +335,30 @@ export class ProductController {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const productDtos = ProductMapper.toDtoList(products, baseUrl);
 
-      res.json(productDtos);
+      // Check if this is an HTMX request
+      const isHtmxRequest = req.headers['hx-request'] === 'true';
+
+      if (isHtmxRequest) {
+        // If it's an HTMX request, render HTML for the search results
+        return res.render('partials/product-search-results', {
+          layout: false, // Don't use the layout for the partial
+          products: productDtos
+        });
+      } else {
+        // Otherwise return JSON
+        res.json(productDtos);
+      }
     } catch (error) {
-      res.status(500).json({
-        error: res.__('products.failed_to_search_products')
-      });
+      if (req.headers['hx-request'] === 'true') {
+        res.status(500).render('partials/error-message', {
+          layout: false,
+          message: res.__('products.failed_to_search_products')
+        });
+      } else {
+        res.status(500).json({
+          error: res.__('products.failed_to_search_products')
+        });
+      }
     }
   }
 }

@@ -112,7 +112,7 @@
                         {{#if (ne this.rel 'update')}}
                             {{#if (ne this.rel 'delete')}}
                                 <button 
-                                    class="btn btn-sm btn-primary"
+                                    class="btn btn-sm {{#if (eq this.rel 'cancel')}}btn-ghost{{else}}btn-primary{{/if}}"
                                     hx-post="{{this.href}}"
                                     hx-target="body"
                                     hx-swap="outerHTML">

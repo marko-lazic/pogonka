@@ -1,7 +1,21 @@
-document.addEventListener('DOMContentLoaded', function() {
+// Global flag to track if we're currently processing an add item request
+let isAddingItem = false;
+
+// Global flag to track if the page has been initialized
+let isPageInitialized = false;
+
+// Function to initialize the order items functionality
+function initializeOrderItemsPage() {
+    console.log('Order items script loaded and executed');
+
+    // If the page is already initialized, don't initialize again
+    if (isPageInitialized) {
+        console.log('Page already initialized, skipping initialization');
+        return;
+    }
+
     // Elements
-    const productSearchInput = document.getElementById('product-search');
-    const productSearchResults = document.getElementById('product-search-results');
+    const productSearchSelect = document.getElementById('product-search');
     const selectedProductIdInput = document.getElementById('selected-product-id');
     const itemQuantityInput = document.getElementById('item-quantity');
     const itemPriceInput = document.getElementById('item-price');
@@ -12,118 +26,205 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderTotalAmount = document.getElementById('order-total-amount');
     const orderForm = document.getElementById('create-order-form');
 
+    // If the required elements aren't present, exit early
+    if (!productSearchSelect) {
+        return;
+    }
+
     // State
     let orderItems = [];
     let selectedProduct = null;
     let nextItemId = 1;
+    let tomSelect = null;
 
     // Initialize
     updateTotalAmount();
+
+    // Initialize Tom Select
+    if (productSearchSelect) {
+        // Destroy existing instance if it exists
+        if (productSearchSelect.tomselect) {
+            productSearchSelect.tomselect.destroy();
+        }
+
+        tomSelect = new TomSelect(productSearchSelect, {
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['id', 'name'],
+            create: false,
+            load: function(query, callback) {
+                fetch(`/api/products/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                    }).catch(() => {
+                        callback();
+                    });
+            },
+            render: {
+                option: function(item, escape) {
+                    return `<div class="py-2 px-3">
+                        <div class="font-medium">${escape(item.name)}</div>
+                        <div class="text-sm opacity-70">${escape(item.price.amount)} ${escape(item.price.currency)}</div>
+                    </div>`;
+                },
+                item: function(item, escape) {
+                    return `<div>${escape(item.name)}</div>`;
+                }
+            },
+            onChange: function(value) {
+                if (!value) {
+                    selectedProduct = null;
+                    selectedProductIdInput.value = '';
+                    itemPriceInput.value = '';
+                    return;
+                }
+
+                const option = this.options[value];
+                if (option) {
+                    selectedProduct = {
+                        id: option.id,
+                        name: option.name,
+                        price: option.price.amount,
+                        currency: option.price.currency
+                    };
+
+                    selectedProductIdInput.value = option.id;
+                    itemPriceInput.value = option.price.amount;
+                    itemCurrencySelect.value = option.price.currency;
+                }
+            }
+        });
+    }
 
     // If we're in edit mode, initialize the form with existing order items
     initializeOrderItems();
 
     // Event Listeners
-    if (productSearchInput) {
-        productSearchInput.addEventListener('focus', function() {
-            if (productSearchResults.children.length > 0) {
-                productSearchResults.classList.remove('hidden');
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!productSearchInput.contains(e.target) && !productSearchResults.contains(e.target)) {
-                productSearchResults.classList.add('hidden');
-            }
-        });
-
-        // Custom event for when search results are loaded
-        productSearchInput.addEventListener('htmx:afterSwap', function() {
-            setupSearchResults();
-        });
-    }
-
     if (addItemBtn) {
         addItemBtn.addEventListener('click', addOrderItem);
     }
 
     if (orderForm) {
-        orderForm.addEventListener('submit', prepareOrderItemsForSubmission);
-    }
+        // Use the htmx:beforeRequest event instead of form submit
+        // This ensures our function runs before HTMX sends the request
+        orderForm.addEventListener('htmx:beforeRequest', function(e) {
+            console.log('htmx:beforeRequest event triggered');
+            prepareOrderItemsForSubmission(e);
+        });
 
-    // Functions
-    function setupSearchResults() {
-        productSearchResults.classList.remove('hidden');
-        const resultItems = productSearchResults.querySelectorAll('a');
-
-        resultItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                const productId = this.dataset.productId;
-                const productName = this.textContent.trim();
-                const productPrice = parseFloat(this.dataset.productPrice || 0);
-                const productCurrency = this.dataset.productCurrency || 'EUR';
-
-                selectedProduct = {
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    currency: productCurrency
-                };
-
-                productSearchInput.value = productName;
-                selectedProductIdInput.value = productId;
-                itemPriceInput.value = productPrice;
-                itemCurrencySelect.value = productCurrency;
-
-                productSearchResults.classList.add('hidden');
-            });
+        // Keep the regular submit handler as a fallback
+        orderForm.addEventListener('submit', function(e) {
+            console.log('Regular form submit event triggered');
+            prepareOrderItemsForSubmission(e);
         });
     }
 
     function addOrderItem() {
-        if (!selectedProduct) {
-            alert('Please select a product');
+        // If we're already processing an add item request, don't process another one
+        if (isAddingItem) {
+            console.log('Already processing an add item request, ignoring duplicate call');
             return;
         }
 
-        const quantity = parseInt(itemQuantityInput.value);
-        if (isNaN(quantity) || quantity <= 0) {
-            alert('Please enter a valid quantity');
-            return;
+        // Set the flag to indicate we're processing an add item request
+        isAddingItem = true;
+
+        try {
+            // Check if product is selected by verifying both the selectedProduct object and the select value
+            if (!selectedProduct || !selectedProductIdInput.value) {
+                // Check if TomSelect has a value but selectedProduct is null (might happen during HTMX swaps)
+                if (tomSelect && tomSelect.getValue() && tomSelect.options[tomSelect.getValue()]) {
+                    const value = tomSelect.getValue();
+                    const option = tomSelect.options[value];
+
+                    // Check if option exists and has the necessary properties
+                    if (option && option.id && option.name) {
+                        // Recreate the selectedProduct object
+                        // Handle both possible structures of the price property
+                        if (option.price && typeof option.price === 'object' && option.price.amount && option.price.currency) {
+                            // Structure: price: { amount: X, currency: Y }
+                            selectedProduct = {
+                                id: option.id,
+                                name: option.name,
+                                price: option.price.amount,
+                                currency: option.price.currency
+                            };
+
+                            itemPriceInput.value = option.price.amount;
+                            itemCurrencySelect.value = option.price.currency;
+                        } else {
+                            // Structure: price: X, currency: Y
+                            // Or use default values if price/currency are not available
+                            selectedProduct = {
+                                id: option.id,
+                                name: option.name,
+                                price: option.price || 0,
+                                currency: option.currency || 'EUR'
+                            };
+
+                            itemPriceInput.value = option.price || 0;
+                            itemCurrencySelect.value = option.currency || 'EUR';
+                        }
+
+                        selectedProductIdInput.value = option.id;
+                    } else {
+                        alert('Invalid product data. Please select a product again.');
+                        isAddingItem = false; // Reset the flag
+                        return;
+                    }
+                } else {
+                    alert('Please select a product');
+                    isAddingItem = false; // Reset the flag
+                    return;
+                }
+            }
+
+            const quantity = parseInt(itemQuantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('Please enter a valid quantity');
+                isAddingItem = false; // Reset the flag
+                return;
+            }
+
+            const price = parseFloat(itemPriceInput.value);
+            if (isNaN(price) || price < 0) {
+                alert('Please enter a valid price');
+                isAddingItem = false; // Reset the flag
+                return;
+            }
+
+            const currency = itemCurrencySelect.value;
+            const total = quantity * price;
+
+            const itemId = `item-${nextItemId++}`;
+
+            const newItem = {
+                id: itemId,
+                productId: selectedProduct.id,
+                productName: selectedProduct.name,
+                quantity: quantity,
+                price: price,
+                currency: currency,
+                total: total
+            };
+
+            orderItems.push(newItem);
+            renderOrderItems();
+            updateTotalAmount();
+
+            // Reset form
+            if (tomSelect) {
+                tomSelect.clear();
+            }
+            selectedProductIdInput.value = '';
+            itemQuantityInput.value = '1';
+            itemPriceInput.value = '';
+            selectedProduct = null;
+        } finally {
+            // Reset the flag regardless of success or failure
+            isAddingItem = false;
         }
-
-        const price = parseFloat(itemPriceInput.value);
-        if (isNaN(price) || price < 0) {
-            alert('Please enter a valid price');
-            return;
-        }
-
-        const currency = itemCurrencySelect.value;
-        const total = quantity * price;
-
-        const itemId = `item-${nextItemId++}`;
-
-        const newItem = {
-            id: itemId,
-            productId: selectedProduct.id,
-            productName: selectedProduct.name,
-            quantity: quantity,
-            price: price,
-            currency: currency,
-            total: total
-        };
-
-        orderItems.push(newItem);
-        renderOrderItems();
-        updateTotalAmount();
-
-        // Reset form
-        productSearchInput.value = '';
-        selectedProductIdInput.value = '';
-        itemQuantityInput.value = '1';
-        itemPriceInput.value = '';
-        selectedProduct = null;
     }
 
     function renderOrderItems() {
@@ -182,7 +283,22 @@ document.addEventListener('DOMContentLoaded', function() {
             currency: item.currency
         };
 
-        productSearchInput.value = item.productName;
+        // Set the Tom Select value
+        if (tomSelect) {
+            // Add the option if it doesn't exist
+            if (!tomSelect.options[item.productId]) {
+                tomSelect.addOption({
+                    id: item.productId,
+                    name: item.productName,
+                    price: {
+                        amount: item.price,
+                        currency: item.currency
+                    }
+                });
+            }
+            tomSelect.setValue(item.productId);
+        }
+
         selectedProductIdInput.value = item.productId;
         itemQuantityInput.value = item.quantity;
         itemPriceInput.value = item.price;
@@ -212,25 +328,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function prepareOrderItemsForSubmission(e) {
+        console.log('Form submission started', e);
+        console.log('Order items:', orderItems);
+        console.log('Form action:', orderForm.getAttribute('action'));
+        console.log('Form method:', orderForm.getAttribute('method'));
+
         // Clear previous data
         orderItemsData.innerHTML = '';
 
-        // If no items, show an alert and prevent submission
-        if (orderItems.length === 0) {
-            alert('Please add at least one item to the order');
-            e.preventDefault();
-            return;
+        // Add hidden inputs for each item if there are any
+        if (orderItems.length > 0) {
+            console.log(`Adding ${orderItems.length} items to form`);
+
+            // Create hidden inputs for each item
+            orderItems.forEach((item, index) => {
+                // Create the HTML for the hidden inputs
+                const inputsHtml = `
+                    <input type="hidden" name="items[${index}][productId]" value="${item.productId}">
+                    <input type="hidden" name="items[${index}][quantity]" value="${item.quantity}">
+                    <input type="hidden" name="items[${index}][price][amount]" value="${item.price}">
+                    <input type="hidden" name="items[${index}][price][currency]" value="${item.currency}">
+                    <input type="hidden" name="items[${index}][total][amount]" value="${item.total}">
+                    <input type="hidden" name="items[${index}][total][currency]" value="${item.currency}">
+                `;
+
+                // Add the inputs to the container
+                orderItemsData.innerHTML += inputsHtml;
+            });
+
+            console.log('Hidden inputs added to form');
+            console.log('Form HTML after adding inputs:', orderItemsData.innerHTML);
         }
 
-        // Add hidden inputs for each item
-        orderItems.forEach((item, index) => {
-            orderItemsData.innerHTML += `
-                <input type="hidden" name="items[${index}][productId]" value="${item.productId}">
-                <input type="hidden" name="items[${index}][quantity]" value="${item.quantity}">
-                <input type="hidden" name="items[${index}][price]" value="${item.price}">
-                <input type="hidden" name="items[${index}][currency]" value="${item.currency}">
-            `;
-        });
+        console.log('Form submission continuing...');
+        // Return true to allow the form submission to continue
+        return true;
     }
 
     function initializeOrderItems() {
@@ -270,6 +402,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (product) {
                                 // Update the product name in the order item
                                 orderItem.productName = product.name;
+
+                                // Add the product to Tom Select options
+                                if (tomSelect && !tomSelect.options[product.id]) {
+                                    tomSelect.addOption(product);
+                                }
+
+                                // Find the item in the orderItems array and update its productName
+                                const itemIndex = orderItems.findIndex(i => i.id === orderItem.id);
+                                if (itemIndex !== -1) {
+                                    orderItems[itemIndex].productName = product.name;
+                                }
+
                                 // Re-render the order items to show the updated name
                                 renderOrderItems();
                             }
@@ -288,4 +432,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error initializing order items:', error);
         }
     }
-});
+
+    // Mark the page as initialized
+    isPageInitialized = true;
+    console.log('Page initialization complete');
+}
+
+// Initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initializeOrderItemsPage);
+
+// Initialize on HTMX events (for HTMX navigation)
+document.addEventListener('htmx:afterSwap', initializeOrderItemsPage);
+document.addEventListener('htmx:load', initializeOrderItemsPage);
+document.addEventListener('htmx:afterOnLoad', initializeOrderItemsPage);
+
+// Add a direct call to initialize when the script loads
+// This ensures initialization happens even if the events don't fire
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initializeOrderItemsPage, 1);
+}

@@ -1,4 +1,14 @@
-document.addEventListener('DOMContentLoaded', function() {
+// Global flag to track if the page has been initialized
+let isDetailsPageInitialized = false;
+
+// Function to initialize the order details functionality
+function initializeOrderDetailsPage() {
+    // If the page is already initialized, don't initialize again
+    if (isDetailsPageInitialized) {
+        console.log('Order details page already initialized, skipping initialization');
+        return;
+    }
+
     // Get all order items
     const orderItems = document.querySelectorAll('.order-item');
 
@@ -6,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     orderItems.forEach(item => {
         const productId = item.dataset.productId;
         const productNameElement = item.querySelector('.product-name');
-        
+
         if (productId && productNameElement) {
             // Fetch product details
             fetch(`/api/products/search?q=${productId}`)
@@ -24,4 +34,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => console.error('Error fetching product:', error));
         }
     });
-});
+
+    // Mark the page as initialized
+    isDetailsPageInitialized = true;
+    console.log('Order details page initialization complete');
+}
+
+// Initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initializeOrderDetailsPage);
+
+// Initialize on HTMX events (for HTMX navigation)
+document.addEventListener('htmx:afterSwap', initializeOrderDetailsPage);
+document.addEventListener('htmx:load', initializeOrderDetailsPage);
+document.addEventListener('htmx:afterOnLoad', initializeOrderDetailsPage);
+
+// Add a direct call to initialize when the script loads
+// This ensures initialization happens even if the events don't fire
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initializeOrderDetailsPage, 1);
+}

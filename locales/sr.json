@@ -72,7 +72,8 @@
     "add_item": "Dodaj stavku",
     "vat": "PIB",
     "loading_product": "Učitavanje proizvoda",
-    "product_id": "ID proizvoda"
+    "product_id": "ID proizvoda",
+    "search_product": "Pretraži proizvod"
   },
   "status": {
     "created": "Kreirana",
