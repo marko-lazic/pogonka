@@ -128,6 +128,13 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Middleware
 app.use(express.static(path.join(__dirname, '../public')));
+// Ensure CSS files are served with the correct MIME type
+app.use('/css', (req, res, next) => {
+  if (req.path.endsWith('.css')) {
+    res.type('text/css');
+  }
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
