@@ -2,8 +2,10 @@ import { Order } from '../../domain/model/Order';
 import { OrderRepository } from '../../domain/repository/OrderRepository';
 import { CustomerInfo } from '../../domain/model/CustomerInfo';
 import { OrderStatus } from '../../domain/model/OrderStatus';
-import {PidGenerator} from "../util/PidGenerator";
+import { PidGenerator } from "../util/PidGenerator";
 import { format } from 'date-fns';
+import { ProductRepository } from '../../domain/repository/ProductRepository';
+import { Money } from '../../domain/model/Money';
 
 /**
  * MockOrderRepository is an in-memory implementation of the OrderRepository interface.
@@ -13,9 +15,11 @@ export class MockOrderRepository implements OrderRepository {
   private orders: Map<string, Order> = new Map();
   private idGenerator =  new PidGenerator();
 
-  constructor() {
+  constructor(private readonly productRepository: ProductRepository) {
     // Initialize with some sample data
-    this.initializeSampleData();
+    this.initializeSampleData().catch(error => {
+      console.error('Error initializing sample order data:', error);
+    });
   }
 
   async findById(id: string): Promise<Order | null> {
@@ -97,7 +101,7 @@ export class MockOrderRepository implements OrderRepository {
     return true;
   }
 
-  private initializeSampleData(): void {
+  private async initializeSampleData(): Promise<void> {
     // Serbian company names
     const companyNames = [
       'Telekom Srbija',
@@ -205,6 +209,27 @@ export class MockOrderRepository implements OrderRepository {
       return statuses[index];
     };
 
+    // Get all products for adding to orders
+    const allProducts = await this.productRepository.findAll();
+
+    // Function to add random order items to an order
+    const addRandomOrderItems = (order: Order): void => {
+      // Determine number of items to add (1-5)
+      const numItems = Math.floor(Math.random() * 5) + 1;
+
+      // Add random items
+      for (let i = 0; i < numItems; i++) {
+        // Select a random product
+        const randomProduct = allProducts[Math.floor(Math.random() * allProducts.length)];
+
+        // Determine a random quantity (1-10)
+        const quantity = Math.floor(Math.random() * 10) + 1;
+
+        // Add the item to the order
+        order.addItem(randomProduct.id, quantity, randomProduct.price);
+      }
+    };
+
     // Generate random orders with Serbian domain information
     // Increased number of orders to 100
     for (let i = 0; i < 100; i++) {
@@ -223,7 +248,12 @@ export class MockOrderRepository implements OrderRepository {
       } else {
         // Generate new info for this company
         taxNumber = Math.floor(100000000 + Math.random() * 900000000).toString();
-        const companySlug = companyName.toLowerCase().replace(/\s+/g, '');
+        // Remove special characters and spaces from company name for email
+        const companySlug = companyName.toLowerCase()
+          .replace(/\s+/g, '')
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w.-]/g, "");
         const domain = domains[Math.floor(Math.random() * domains.length)];
         email = `info@${companySlug}.${domain}`;
 
@@ -242,6 +272,9 @@ export class MockOrderRepository implements OrderRepository {
 
       // Create order with the generated ID
       const order = new Order(this.idGenerator.id(), customer, status);
+
+      // Add random order items
+      addRandomOrderItems(order);
 
       // Set the createdAt date to our generated date
       Object.defineProperty(order, '_createdAt', { value: createdAt });

@@ -110,13 +110,19 @@ function initializeOrderItemsPage() {
         // This ensures our function runs before HTMX sends the request
         orderForm.addEventListener('htmx:beforeRequest', function(e) {
             console.log('htmx:beforeRequest event triggered');
-            prepareOrderItemsForSubmission(e);
+            if (!prepareOrderItemsForSubmission(e)) {
+                e.preventDefault();
+                console.log('Form submission prevented by prepareOrderItemsForSubmission');
+            }
         });
 
         // Keep the regular submit handler as a fallback
         orderForm.addEventListener('submit', function(e) {
             console.log('Regular form submit event triggered');
-            prepareOrderItemsForSubmission(e);
+            if (!prepareOrderItemsForSubmission(e)) {
+                e.preventDefault();
+                console.log('Form submission prevented by prepareOrderItemsForSubmission');
+            }
         });
     }
 
@@ -195,7 +201,8 @@ function initializeOrderItemsPage() {
             }
 
             const currency = itemCurrencySelect.value;
-            const total = quantity * price;
+            // Round the total to 2 decimal places
+            const total = Math.round((quantity * price) * 100) / 100;
 
             const itemId = `item-${nextItemId++}`;
 
@@ -322,6 +329,8 @@ function initializeOrderItemsPage() {
             // For simplicity, we're assuming all items have the same currency
             currency = orderItems[0].currency;
             total = orderItems.reduce((sum, item) => sum + item.total, 0);
+            // Round the total to 2 decimal places
+            total = Math.round(total * 100) / 100;
         }
 
         orderTotalAmount.textContent = `${total.toFixed(2)} ${currency}`;
@@ -333,6 +342,51 @@ function initializeOrderItemsPage() {
         console.log('Form action:', orderForm.getAttribute('action'));
         console.log('Form method:', orderForm.getAttribute('method'));
 
+        // Check if we're in edit mode and no items have been added/modified
+        const isEditMode = orderForm.getAttribute('action').includes('/update');
+        const originalOrderItems = orderItemsData.dataset.orderItems;
+
+        // If we're in edit mode and the orderItems array is empty, but we have original items data
+        if (isEditMode && orderItems.length === 0 && originalOrderItems) {
+            console.log('Edit mode with no changes to items, using original items');
+
+            try {
+                // Parse the original order items data
+                const originalItems = JSON.parse(originalOrderItems);
+
+                // Clear previous data
+                orderItemsData.innerHTML = '';
+
+                // Add hidden inputs for each original item
+                if (originalItems && originalItems.length > 0) {
+                    console.log(`Adding ${originalItems.length} original items to form`);
+
+                    // Create hidden inputs for each original item
+                    originalItems.forEach((item, index) => {
+                        // Create the HTML for the hidden inputs
+                        const inputsHtml = `
+                            <input type="hidden" name="items[${index}][productId]" value="${item.productId}">
+                            <input type="hidden" name="items[${index}][quantity]" value="${item.quantity}">
+                            <input type="hidden" name="items[${index}][price][amount]" value="${item.price.amount || item.price}">
+                            <input type="hidden" name="items[${index}][price][currency]" value="${item.price.currency || item.currency}">
+                            <input type="hidden" name="items[${index}][total][amount]" value="${Math.round((item.total.amount || item.total) * 100) / 100}">
+                            <input type="hidden" name="items[${index}][total][currency]" value="${item.total.currency || item.currency}">
+                        `;
+
+                        // Add the inputs to the container
+                        orderItemsData.innerHTML += inputsHtml;
+                    });
+
+                    console.log('Hidden inputs for original items added to form');
+                    console.log('Form HTML after adding inputs:', orderItemsData.innerHTML);
+                }
+            } catch (error) {
+                console.error('Error processing original order items:', error);
+            }
+
+            return true;
+        }
+
         // Clear previous data
         orderItemsData.innerHTML = '';
 
@@ -343,12 +397,14 @@ function initializeOrderItemsPage() {
             // Create hidden inputs for each item
             orderItems.forEach((item, index) => {
                 // Create the HTML for the hidden inputs
+                // Ensure we're using the correct format for price and total
+                // They should be objects with amount and currency properties
                 const inputsHtml = `
                     <input type="hidden" name="items[${index}][productId]" value="${item.productId}">
                     <input type="hidden" name="items[${index}][quantity]" value="${item.quantity}">
                     <input type="hidden" name="items[${index}][price][amount]" value="${item.price}">
                     <input type="hidden" name="items[${index}][price][currency]" value="${item.currency}">
-                    <input type="hidden" name="items[${index}][total][amount]" value="${item.total}">
+                    <input type="hidden" name="items[${index}][total][amount]" value="${Math.round(item.total * 100) / 100}">
                     <input type="hidden" name="items[${index}][total][currency]" value="${item.currency}">
                 `;
 
@@ -389,7 +445,7 @@ function initializeOrderItemsPage() {
                     quantity: item.quantity,
                     price: item.price.amount,
                     currency: item.price.currency,
-                    total: item.total.amount
+                    total: Math.round(item.total.amount * 100) / 100
                 };
 
                 // Fetch product name if not available

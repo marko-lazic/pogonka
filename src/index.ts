@@ -187,8 +187,8 @@ app.use((req, res, next) => {
 });
 
 // Initialize repositories, services, and controllers
-const orderRepository = new MockOrderRepository();
 const productRepository = new MockProductRepository();
+const orderRepository = new MockOrderRepository(productRepository);
 const pidGenerateId = new PidGenerator();
 const orderService = new OrderService(orderRepository, pidGenerateId);
 const productService = new ProductService(productRepository, pidGenerateId);
