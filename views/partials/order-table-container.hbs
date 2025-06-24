@@ -102,7 +102,7 @@
                             <a href="/orders/{{this.id}}" class="link link-hover font-medium text-lg">
                                 {{this.id}}
                             </a>
-                            <div class="badge badge-auto-height
+                            <div class="badge h-auto min-h-5 whitespace-normal break-words leading-tight py-1
                                 {{#if (eq this.status 'created')}}badge-neutral{{/if}}
                                 {{#if (eq this.status 'confirmed')}}badge-primary{{/if}}
                                 {{#if (eq this.status 'canceled')}}badge-error{{/if}}
