@@ -189,8 +189,7 @@ app.use((req, res, next) => {
 
 // Initialize session for each request
 app.use((req, res, next) => {
-  // Initialize the session
-  const sessionController = new SessionController();
+  // Initialize the session using the global controller instance
   sessionController.initSession(req, res);
 
   // Make session data available to templates
@@ -200,6 +199,7 @@ app.use((req, res, next) => {
 });
 
 // Initialize repositories, services, and controllers
+const sessionController = new SessionController();
 const productRepository = new MockProductRepository();
 const orderRepository = new MockOrderRepository(productRepository);
 const pidGenerateId = new PidGenerator();
@@ -208,7 +208,6 @@ const productService = new ProductService(productRepository, pidGenerateId);
 const orderController = new OrderController(orderService);
 const productController = new ProductController(productService);
 const notificationController = new NotificationController();
-const sessionController = new SessionController();
 
 // Routes
 app.get('/', (req: Request, res: Response) => {

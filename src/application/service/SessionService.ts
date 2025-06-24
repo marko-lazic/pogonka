@@ -26,10 +26,6 @@ export class SessionService {
   public initSession(req: any): string {
     if (!req.session.userId) {
       req.session.userId = uuidv4();
-      req.session.preferences = {
-        language: req.cookies?.lang,
-        theme: 'light'
-      };
     }
     return req.session.userId;
   }
