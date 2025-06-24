@@ -83,9 +83,9 @@
     "confirmed": "Potvrđena",
     "canceled": "Otkazana",
     "payment_of_avans": "Plaćanje avansa",
-    "production_and_packaging": "Proizvodnja i pakovanje",
+    "production_and_packaging": "Proizvodnja",
     "delivery": "Isporuka",
-    "project_billing": "Fakturisanje projekta"
+    "project_billing": "Fakturisanje"
   },
   "actions": {
     "confirm": "Potvrdi",

@@ -82,8 +82,8 @@
     "created": "Created",
     "confirmed": "Confirmed",
     "canceled": "Canceled",
-    "payment_of_avans": "Payment of Avans",
-    "production_and_packaging": "Production and Packaging",
+    "payment_of_avans": "Avans Payment",
+    "production_and_packaging": "Production",
     "delivery": "Delivery",
     "project_billing": "Project Billing"
   },
