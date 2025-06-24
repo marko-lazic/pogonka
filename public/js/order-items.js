@@ -35,70 +35,175 @@ function initializeOrderItemsPage() {
     let orderItems = [];
     let selectedProduct = null;
     let nextItemId = 1;
-    let tomSelect = null;
+    let autocompleterInstance = null;
 
     // Initialize
     updateTotalAmount();
 
-    // Initialize Tom Select
+    // Initialize Autocompleter
     if (productSearchSelect) {
-        // Destroy existing instance if it exists
-        if (productSearchSelect.tomselect) {
-            productSearchSelect.tomselect.destroy();
+        const productSuggestions = document.getElementById('product-suggestions');
+        
+        if (productSuggestions) {
+            // Initialize autocompleter
+            initializeAutocompleter(productSearchSelect, productSuggestions);
         }
-
-        tomSelect = new TomSelect(productSearchSelect, {
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['id', 'name'],
-            create: false,
-            load: function(query, callback) {
-                fetch(`/api/products/search?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(json => {
-                        callback(json);
-                    }).catch(() => {
-                        callback();
-                    });
-            },
-            render: {
-                option: function(item, escape) {
-                    return `<div class="py-2 px-3">
-                        <div class="font-medium">${escape(item.name)}</div>
-                        <div class="text-sm opacity-70">${escape(item.price.amount)} ${escape(item.price.currency)}</div>
-                    </div>`;
-                },
-                item: function(item, escape) {
-                    return `<div>${escape(item.name)}</div>`;
-                }
-            },
-            onChange: function(value) {
-                if (!value) {
-                    selectedProduct = null;
-                    selectedProductIdInput.value = '';
-                    itemPriceInput.value = '';
-                    return;
-                }
-
-                const option = this.options[value];
-                if (option) {
-                    selectedProduct = {
-                        id: option.id,
-                        name: option.name,
-                        price: option.price.amount,
-                        currency: option.price.currency
-                    };
-
-                    selectedProductIdInput.value = option.id;
-                    itemPriceInput.value = option.price.amount;
-                    itemCurrencySelect.value = option.price.currency;
-                }
-            }
-        });
     }
 
     // If we're in edit mode, initialize the form with existing order items
     initializeOrderItems();
+
+    function initializeAutocompleter(input, suggestionsContainer) {
+        let searchTimeout;
+        let currentProducts = [];
+        let selectedIndex = -1;
+
+        function showSuggestions(products) {
+            currentProducts = products;
+            selectedIndex = -1;
+            
+            if (products.length === 0) {
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+
+            suggestionsContainer.innerHTML = '';
+            
+            products.forEach((product, index) => {
+                const suggestion = document.createElement('div');
+                suggestion.className = 'p-3 cursor-pointer hover:bg-base-200 border-b border-base-300 last:border-b-0';
+                suggestion.innerHTML = `
+                    <div class="font-medium text-base-content">${escapeHtml(product.name)}</div>
+                    <div class="text-sm text-base-content/70">${escapeHtml(product.price.amount)} ${escapeHtml(product.price.currency)}</div>
+                `;
+                
+                suggestion.addEventListener('click', () => {
+                    selectProduct(product);
+                });
+
+                suggestionsContainer.appendChild(suggestion);
+            });
+
+            suggestionsContainer.classList.remove('hidden');
+        }
+
+        function hideSuggestions() {
+            suggestionsContainer.classList.add('hidden');
+            currentProducts = [];
+            selectedIndex = -1;
+        }
+
+        function selectProduct(product) {
+            selectedProduct = {
+                id: product.id,
+                name: product.name,
+                price: product.price.amount,
+                currency: product.price.currency
+            };
+
+            input.value = product.name;
+            selectedProductIdInput.value = product.id;
+            itemPriceInput.value = product.price.amount;
+            itemCurrencySelect.value = product.price.currency;
+            
+            hideSuggestions();
+        }
+
+        function highlightSuggestion(index) {
+            const suggestions = suggestionsContainer.querySelectorAll('div[class*="p-3"]');
+            suggestions.forEach((suggestion, i) => {
+                if (i === index) {
+                    suggestion.classList.add('bg-primary', 'text-primary-content');
+                    suggestion.classList.remove('hover:bg-base-200');
+                } else {
+                    suggestion.classList.remove('bg-primary', 'text-primary-content');
+                    suggestion.classList.add('hover:bg-base-200');
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Input event handler
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideSuggestions();
+                selectedProduct = null;
+                selectedProductIdInput.value = '';
+                itemPriceInput.value = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/products/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(products => {
+                        showSuggestions(products);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                        hideSuggestions();
+                    });
+            }, 300);
+        });
+
+        // Keyboard navigation
+        input.addEventListener('keydown', (e) => {
+            if (currentProducts.length === 0) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, currentProducts.length - 1);
+                    highlightSuggestion(selectedIndex);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    highlightSuggestion(selectedIndex);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && currentProducts[selectedIndex]) {
+                        selectProduct(currentProducts[selectedIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    hideSuggestions();
+                    break;
+            }
+        });
+
+        // Click outside to hide suggestions
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+
+        // Focus handler
+        input.addEventListener('focus', () => {
+            if (input.value.trim().length >= 2) {
+                const query = input.value.trim();
+                fetch(`/api/products/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(products => {
+                        showSuggestions(products);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                    });
+            }
+        });
+    }
 
     // Event Listeners
     if (addItemBtn) {
@@ -137,53 +242,11 @@ function initializeOrderItemsPage() {
         isAddingItem = true;
 
         try {
-            // Check if product is selected by verifying both the selectedProduct object and the select value
+            // Check if product is selected
             if (!selectedProduct || !selectedProductIdInput.value) {
-                // Check if TomSelect has a value but selectedProduct is null (might happen during HTMX swaps)
-                if (tomSelect && tomSelect.getValue() && tomSelect.options[tomSelect.getValue()]) {
-                    const value = tomSelect.getValue();
-                    const option = tomSelect.options[value];
-
-                    // Check if option exists and has the necessary properties
-                    if (option && option.id && option.name) {
-                        // Recreate the selectedProduct object
-                        // Handle both possible structures of the price property
-                        if (option.price && typeof option.price === 'object' && option.price.amount && option.price.currency) {
-                            // Structure: price: { amount: X, currency: Y }
-                            selectedProduct = {
-                                id: option.id,
-                                name: option.name,
-                                price: option.price.amount,
-                                currency: option.price.currency
-                            };
-
-                            itemPriceInput.value = option.price.amount;
-                            itemCurrencySelect.value = option.price.currency;
-                        } else {
-                            // Structure: price: X, currency: Y
-                            // Or use default values if price/currency are not available
-                            selectedProduct = {
-                                id: option.id,
-                                name: option.name,
-                                price: option.price || 0,
-                                currency: option.currency || 'EUR'
-                            };
-
-                            itemPriceInput.value = option.price || 0;
-                            itemCurrencySelect.value = option.currency || 'EUR';
-                        }
-
-                        selectedProductIdInput.value = option.id;
-                    } else {
-                        alert('Invalid product data. Please select a product again.');
-                        isAddingItem = false; // Reset the flag
-                        return;
-                    }
-                } else {
-                    alert('Please select a product');
-                    isAddingItem = false; // Reset the flag
-                    return;
-                }
+                alert('Please select a product');
+                isAddingItem = false; // Reset the flag
+                return;
             }
 
             const quantity = parseInt(itemQuantityInput.value);
@@ -221,9 +284,7 @@ function initializeOrderItemsPage() {
             updateTotalAmount();
 
             // Reset form
-            if (tomSelect) {
-                tomSelect.clear();
-            }
+            productSearchSelect.value = '';
             selectedProductIdInput.value = '';
             itemQuantityInput.value = '1';
             itemPriceInput.value = '';
@@ -290,22 +351,8 @@ function initializeOrderItemsPage() {
             currency: item.currency
         };
 
-        // Set the Tom Select value
-        if (tomSelect) {
-            // Add the option if it doesn't exist
-            if (!tomSelect.options[item.productId]) {
-                tomSelect.addOption({
-                    id: item.productId,
-                    name: item.productName,
-                    price: {
-                        amount: item.price,
-                        currency: item.currency
-                    }
-                });
-            }
-            tomSelect.setValue(item.productId);
-        }
-
+        // Set the autocompleter input value
+        productSearchSelect.value = item.productName;
         selectedProductIdInput.value = item.productId;
         itemQuantityInput.value = item.quantity;
         itemPriceInput.value = item.price;
@@ -458,11 +505,6 @@ function initializeOrderItemsPage() {
                             if (product) {
                                 // Update the product name in the order item
                                 orderItem.productName = product.name;
-
-                                // Add the product to Tom Select options
-                                if (tomSelect && !tomSelect.options[product.id]) {
-                                    tomSelect.addOption(product);
-                                }
 
                                 // Find the item in the orderItems array and update its productName
                                 const itemIndex = orderItems.findIndex(i => i.id === orderItem.id);

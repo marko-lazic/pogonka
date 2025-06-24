@@ -89,13 +89,16 @@
                         <label class="label">
                             <span class="label-text">{{__ 'orders.product'}}</span>
                         </label>
-                        <select 
-                            id="product-search" 
-                            placeholder="{{__ 'orders.search_product'}}"
-                            autocomplete="off"
-                        >
-                            <option value="">{{__ 'orders.search_product'}}...</option>
-                        </select>
+                        <div class="relative">
+                            <input 
+                                type="text"
+                                id="product-search" 
+                                placeholder="{{__ 'orders.search_product'}}"
+                                autocomplete="off"
+                                class="input input-bordered w-full"
+                            />
+                            <div id="product-suggestions" class="absolute z-50 w-full bg-base-100 border border-base-300 rounded-box shadow-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
+                        </div>
                         <input type="hidden" id="selected-product-id" name="productId" />
                     </div>
 
