@@ -57,13 +57,14 @@
 
             <div class="divider">{{__ 'orders.order_items'}}</div>
 
-            <div class="overflow-x-auto">
+            <!-- Desktop Table View -->
+            <div class="hidden md:block">
                 <table class="table w-full">
                     <thead>
                         <tr>
                             <th>{{__ 'orders.product'}}</th>
                             <th>{{__ 'orders.quantity'}}</th>
-                            <th class="hidden md:table-cell">{{__ 'orders.price'}}</th>
+                            <th>{{__ 'orders.price'}}</th>
                             <th>{{__ 'orders.total'}}</th>
                         </tr>
                     </thead>
@@ -79,9 +80,9 @@
                                         <div class="text-xs opacity-70">{{__ 'orders.product_id'}}: {{this.productId}}</div>
                                     {{/if}}
                                 </td>
-                                <td>{{this.quantity}}</td>
-                                <td class="hidden md:table-cell">{{formatNumber this.price.amount 2}} {{this.price.currency}}</td>
-                                <td>{{formatNumber this.total.amount 2}} {{this.total.currency}}</td>
+                                <td><span class="font-medium">{{this.quantity}}</span></td>
+                                <td><span class="font-medium">{{formatNumber this.price.amount 2}} {{this.price.currency}}</span></td>
+                                <td><span class="font-medium text-primary">{{formatNumber this.total.amount 2}} {{this.total.currency}}</span></td>
                             </tr>
                         {{else}}
                             <tr>
@@ -90,19 +91,73 @@
                         {{/each}}
                     </tbody>
                     <tfoot>
-                        <tr>
-                            <td colspan="2" class="text-right font-bold md:hidden">{{__ 'orders.total_amount'}}:</td>
-                            <td colspan="3" class="text-right font-bold hidden md:table-cell">{{__ 'orders.total_amount'}}:</td>
-                            <td class="font-bold">
-                                {{#if order.totalAmount}}
-                                    {{formatNumber order.totalAmount.amount 2}} {{order.totalAmount.currency}}
-                                {{else}}
-                                    0.00 EUR
-                                {{/if}}
+                        <tr class="bg-base-200">
+                            <td colspan="3" class="text-right font-bold text-lg p-4">{{__ 'orders.total_amount'}}:</td>
+                            <td class="font-bold text-lg p-4">
+                                <span class="text-primary">
+                                    {{#if order.totalAmount}}
+                                        {{formatNumber order.totalAmount.amount 2}} {{order.totalAmount.currency}}
+                                    {{else}}
+                                        0.00 EUR
+                                    {{/if}}
+                                </span>
                             </td>
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="md:hidden">
+                {{#each order.items}}
+                    <div class="card bg-base-100 border border-base-300 mb-4 order-item" data-product-id="{{this.productId}}">
+                        <div class="card-body p-4">
+                            <div class="mb-2">
+                                {{#if this.productName}}
+                                    <h3 class="font-medium text-base product-name">{{this.productName}}</h3>
+                                    <p class="text-xs opacity-70">{{__ 'orders.product_id'}}: {{this.productId}}</p>
+                                {{else}}
+                                    <h3 class="font-medium text-base product-name">{{__ 'orders.loading_product'}}...</h3>
+                                    <p class="text-xs opacity-70">{{__ 'orders.product_id'}}: {{this.productId}}</p>
+                                {{/if}}
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-base-content/70">{{__ 'orders.quantity'}}:</span>
+                                    <span class="font-medium">{{this.quantity}}</span>
+                                </div>
+                                <div>
+                                    <span class="text-base-content/70">{{__ 'orders.price'}}:</span>
+                                    <span class="font-medium">{{formatNumber this.price.amount 2}} {{this.price.currency}}</span>
+                                </div>
+                                <div>
+                                    <span class="text-base-content/70">{{__ 'orders.total'}}:</span>
+                                    <span class="font-medium text-primary">{{formatNumber this.total.amount 2}} {{this.total.currency}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="card bg-base-100 border border-base-300">
+                        <div class="card-body p-4 text-center">
+                            <p>{{__ 'orders.no_items'}}</p>
+                        </div>
+                    </div>
+                {{/each}}
+                
+                <!-- Mobile Total -->
+                <div class="mt-4 p-4 bg-base-200 rounded-lg">
+                    <div class="flex justify-between items-center font-bold text-lg">
+                        <span>{{__ 'orders.total_amount'}}:</span>
+                        <span class="text-primary">
+                            {{#if order.totalAmount}}
+                                {{formatNumber order.totalAmount.amount 2}} {{order.totalAmount.currency}}
+                            {{else}}
+                                0.00 EUR
+                            {{/if}}
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div class="divider">{{__ 'common.actions'}}</div>

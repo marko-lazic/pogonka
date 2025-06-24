@@ -23,6 +23,8 @@
                     hx-post="/orders"
                 {{/if}}
                 hx-target="body" hx-swap="outerHTML">
+                
+
                 <div class="divider">{{__ 'orders.customer_information'}}</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,19 +53,71 @@
                     </div>
                 </div>
 
+                <div class="divider">{{__ 'orders.add_item'}}</div>
+
+                <!-- Add New Item Form -->
+                <div class="bg-base-200 p-4 rounded-lg mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div class="form-control w-full md:col-span-5">
+                            <label class="label">
+                                <span class="label-text">{{__ 'orders.product'}}</span>
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="text"
+                                    id="product-search" 
+                                    placeholder="{{__ 'orders.search_product'}}"
+                                    autocomplete="off"
+                                    class="input input-bordered w-full"
+                                />
+                                <div id="product-suggestions" class="absolute z-[60] w-full bg-base-100 border border-base-300 rounded-box shadow-xl mt-1 max-h-60 overflow-y-auto hidden"></div>
+                            </div>
+                            <input type="hidden" id="selected-product-id" name="productId" />
+                        </div>
+
+                        <div class="form-control w-full md:col-span-2">
+                            <label class="label">
+                                <span class="label-text">{{__ 'orders.quantity'}}</span>
+                            </label>
+                            <input type="number" id="item-quantity" min="1" value="1" class="input input-bordered w-full" />
+                        </div>
+
+                        <div class="form-control w-full md:col-span-3">
+                            <label class="label">
+                                <span class="label-text">{{__ 'orders.price'}}</span>
+                            </label>
+                            <div class="join">
+                                <input type="number" id="item-price" min="0" step="0.01" class="input input-bordered w-full join-item" />
+                                <select id="item-currency" class="select select-bordered join-item">
+                                    <option value="EUR" selected>EUR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <button type="button" id="add-item-btn" class="btn btn-secondary w-full">
+                                {{__ 'orders.add_item'}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="divider">{{__ 'orders.order_items'}}</div>
 
                 <!-- Order Items List -->
-                <div id="order-items-container" class="mb-4">
-                    <div class="overflow-x-auto">
+                <div id="order-items-container" class="mb-6">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block">
                         <table class="table w-full">
                             <thead>
                                 <tr>
-                                    <th class="w-1/3">{{__ 'orders.product'}}</th>
-                                    <th class="w-1/6">{{__ 'orders.quantity'}}</th>
-                                    <th class="w-1/6 hidden md:table-cell">{{__ 'orders.price'}}</th>
-                                    <th class="w-1/6">{{__ 'orders.total'}}</th>
-                                    <th class="w-1/6">{{__ 'common.actions'}}</th>
+                                    <th>{{__ 'orders.product'}}</th>
+                                    <th>{{__ 'orders.quantity'}}</th>
+                                    <th>{{__ 'orders.price'}}</th>
+                                    <th>{{__ 'orders.total'}}</th>
+                                    <th>{{__ 'common.actions'}}</th>
                                 </tr>
                             </thead>
                             <tbody id="order-items-list">
@@ -71,62 +125,24 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="2" class="text-right font-bold md:hidden">{{__ 'orders.total_amount'}}:</td>
-                                    <td colspan="3" class="text-right font-bold hidden md:table-cell">{{__ 'orders.total_amount'}}:</td>
+                                    <td colspan="4" class="text-right font-bold">{{__ 'orders.total_amount'}}:</td>
                                     <td id="order-total-amount" class="font-bold">0.00 EUR</td>
-                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                </div>
 
-                <div class="divider">{{__ 'orders.add_item'}}</div>
-
-                <!-- Add New Item Form -->
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
-                    <div class="form-control w-full md:col-span-5">
-                        <label class="label">
-                            <span class="label-text">{{__ 'orders.product'}}</span>
-                        </label>
-                        <div class="relative">
-                            <input 
-                                type="text"
-                                id="product-search" 
-                                placeholder="{{__ 'orders.search_product'}}"
-                                autocomplete="off"
-                                class="input input-bordered w-full"
-                            />
-                            <div id="product-suggestions" class="absolute z-50 w-full bg-base-100 border border-base-300 rounded-box shadow-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
+                    <!-- Mobile Card View -->
+                    <div class="md:hidden">
+                        <div id="order-items-mobile" class="space-y-4">
+                            <!-- Mobile order items will be added here dynamically -->
                         </div>
-                        <input type="hidden" id="selected-product-id" name="productId" />
-                    </div>
-
-                    <div class="form-control w-full md:col-span-2">
-                        <label class="label">
-                            <span class="label-text">{{__ 'orders.quantity'}}</span>
-                        </label>
-                        <input type="number" id="item-quantity" min="1" value="1" class="input input-bordered w-full" />
-                    </div>
-
-                    <div class="form-control w-full md:col-span-3">
-                        <label class="label">
-                            <span class="label-text">{{__ 'orders.price'}}</span>
-                        </label>
-                        <div class="join">
-                            <input type="number" id="item-price" min="0" step="0.01" class="input input-bordered w-full join-item" />
-                            <select id="item-currency" class="select select-bordered join-item">
-                                <option value="EUR" selected>EUR</option>
-                                <option value="USD">USD</option>
-                                <option value="GBP">GBP</option>
-                            </select>
+                        <div class="mt-4 p-4 bg-base-200 rounded-lg">
+                            <div class="flex justify-between items-center font-bold text-lg">
+                                <span>{{__ 'orders.total_amount'}}:</span>
+                                <span id="order-total-amount-mobile" class="text-primary">0.00 EUR</span>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <button type="button" id="add-item-btn" class="btn btn-secondary w-full">
-                            {{__ 'orders.add_item'}}
-                        </button>
                     </div>
                 </div>
 
@@ -140,7 +156,8 @@
                     <!-- Order items data will be added here as hidden inputs -->
                 </div>
 
-                <div class="flex justify-end gap-2 mt-4">
+                <!-- Form Actions -->
+                <div class="flex justify-end gap-2 mt-6">
                     <a href="{{#if isEdit}}/orders/{{order.id}}{{else}}/orders{{/if}}" class="btn btn-ghost">{{__ 'common.cancel'}}</a>
                     <button type="submit" class="btn btn-primary">
                         {{#if isEdit}}
@@ -150,6 +167,7 @@
                         {{/if}}
                     </button>
                 </div>
+
             </form>
         </div>
     </div>
