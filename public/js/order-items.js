@@ -488,7 +488,7 @@ function initializeOrderItemsPage() {
                 const orderItem = {
                     id: itemId,
                     productId: item.productId,
-                    productName: `Product ${item.productId}`, // Temporary name
+                    productName: 'Loading product...', // Temporary name that will be updated
                     quantity: item.quantity,
                     price: item.price.amount,
                     currency: item.price.currency,

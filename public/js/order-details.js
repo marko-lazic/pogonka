@@ -3,14 +3,18 @@ let isDetailsPageInitialized = false;
 
 // Function to initialize the order details functionality
 function initializeOrderDetailsPage() {
+    // Check if we're on the order details page
+    const orderItems = document.querySelectorAll('.order-item');
+    if (orderItems.length === 0) {
+        // No order items found, this might not be the order details page
+        return;
+    }
+
     // If the page is already initialized, don't initialize again
     if (isDetailsPageInitialized) {
         console.log('Order details page already initialized, skipping initialization');
         return;
     }
-
-    // Get all order items
-    const orderItems = document.querySelectorAll('.order-item');
 
     // For each order item, fetch the product name
     orderItems.forEach(item => {
@@ -43,8 +47,17 @@ function initializeOrderDetailsPage() {
 // Initialize on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', initializeOrderDetailsPage);
 
+// Function to reset initialization flag
+function resetOrderDetailsInitialization() {
+    isDetailsPageInitialized = false;
+    console.log('Order details page initialization flag reset');
+}
+
 // Initialize on HTMX events (for HTMX navigation)
-document.addEventListener('htmx:afterSwap', initializeOrderDetailsPage);
+document.addEventListener('htmx:afterSwap', function() {
+    resetOrderDetailsInitialization();
+    initializeOrderDetailsPage();
+});
 document.addEventListener('htmx:load', initializeOrderDetailsPage);
 document.addEventListener('htmx:afterOnLoad', initializeOrderDetailsPage);
 
