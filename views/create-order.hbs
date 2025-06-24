@@ -61,7 +61,7 @@
                                 <tr>
                                     <th class="w-1/3">{{__ 'orders.product'}}</th>
                                     <th class="w-1/6">{{__ 'orders.quantity'}}</th>
-                                    <th class="w-1/6">{{__ 'orders.price'}}</th>
+                                    <th class="w-1/6 hidden md:table-cell">{{__ 'orders.price'}}</th>
                                     <th class="w-1/6">{{__ 'orders.total'}}</th>
                                     <th class="w-1/6">{{__ 'common.actions'}}</th>
                                 </tr>
@@ -71,7 +71,8 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3" class="text-right font-bold">{{__ 'orders.total_amount'}}:</td>
+                                    <td colspan="2" class="text-right font-bold md:hidden">{{__ 'orders.total_amount'}}:</td>
+                                    <td colspan="3" class="text-right font-bold hidden md:table-cell">{{__ 'orders.total_amount'}}:</td>
                                     <td id="order-total-amount" class="font-bold">0.00 EUR</td>
                                     <td></td>
                                 </tr>

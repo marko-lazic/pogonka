@@ -63,7 +63,7 @@
                         <tr>
                             <th>{{__ 'orders.product'}}</th>
                             <th>{{__ 'orders.quantity'}}</th>
-                            <th>{{__ 'orders.price'}}</th>
+                            <th class="hidden md:table-cell">{{__ 'orders.price'}}</th>
                             <th>{{__ 'orders.total'}}</th>
                         </tr>
                     </thead>
@@ -80,8 +80,8 @@
                                     {{/if}}
                                 </td>
                                 <td>{{this.quantity}}</td>
-                                <td>{{this.price.amount}} {{this.price.currency}}</td>
-                                <td>{{this.total.amount}} {{this.total.currency}}</td>
+                                <td class="hidden md:table-cell">{{formatNumber this.price.amount 2}} {{this.price.currency}}</td>
+                                <td>{{formatNumber this.total.amount 2}} {{this.total.currency}}</td>
                             </tr>
                         {{else}}
                             <tr>
@@ -91,10 +91,11 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3" class="text-right font-bold">{{__ 'orders.total_amount'}}:</td>
+                            <td colspan="2" class="text-right font-bold md:hidden">{{__ 'orders.total_amount'}}:</td>
+                            <td colspan="3" class="text-right font-bold hidden md:table-cell">{{__ 'orders.total_amount'}}:</td>
                             <td class="font-bold">
                                 {{#if order.totalAmount}}
-                                    {{order.totalAmount.amount}} {{order.totalAmount.currency}}
+                                    {{formatNumber order.totalAmount.amount 2}} {{order.totalAmount.currency}}
                                 {{else}}
                                     0.00 EUR
                                 {{/if}}

@@ -243,7 +243,7 @@ function initializeOrderItemsPage() {
             row.innerHTML = `
                 <td>${item.productName}</td>
                 <td>${item.quantity}</td>
-                <td>${item.price.toFixed(2)} ${item.currency}</td>
+                <td class="hidden md:table-cell">${item.price.toFixed(2)} ${item.currency}</td>
                 <td>${item.total.toFixed(2)} ${item.currency}</td>
                 <td>
                     <div class="dropdown dropdown-end">

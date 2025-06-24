@@ -118,6 +118,12 @@ const handlebars = create({
     // Helper to convert an object to JSON string
     json: function(obj: any) {
       return JSON.stringify(obj);
+    },
+
+    // Helper to format a number with specified decimal places
+    formatNumber: function(number: number, decimalPlaces: number) {
+      if (number === undefined || number === null) return '';
+      return number.toFixed(decimalPlaces);
     }
   }
 });
